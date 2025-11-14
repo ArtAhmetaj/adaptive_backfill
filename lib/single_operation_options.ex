@@ -9,9 +9,9 @@ defmodule SingleOperationOptions do
 
   @type t :: %__MODULE__{
     handle: ((health_check()) -> {:ok, any()} | {:error, any()}),
-    onComplete: ((any()) ->  any()),
+    on_complete: ((any()) ->  any()),
     mode: Types.operation_mode(),
   }
 
-  defstruct [:onComplete, :handle, :mode]
+  defstruct [:on_complete, :handle, :mode]
 end
