@@ -10,8 +10,8 @@ defmodule BatchOperationOptions do
           handle_batch: ((any()) -> (any())),
           on_complete: ((any()) ->  any()),
           mode: Types.operation_mode(),
-
+          health_checkers: [Types.health_checker()]
         }
 
-  defstruct [:initial_state, :handle_batch, :on_complete, :mode]
+  defstruct [:initial_state, :handle_batch, :on_complete, :mode, :health_checkers]
 end

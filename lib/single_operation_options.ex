@@ -11,7 +11,8 @@ defmodule SingleOperationOptions do
     handle: ((health_check()) -> {:ok, any()} | {:error, any()}),
     on_complete: ((any()) ->  any()),
     mode: Types.operation_mode(),
+    health_checkers: [Types.health_checker()]
   }
 
-  defstruct [:on_complete, :handle, :mode]
+  defstruct [:on_complete, :handle, :mode, :health_checkers]
 end
