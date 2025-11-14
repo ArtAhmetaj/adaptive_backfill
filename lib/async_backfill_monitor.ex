@@ -28,8 +28,5 @@ defmodule AsyncBackfillMonitor do
   end
 
 
-  defp fetch
-
-
 
 end
