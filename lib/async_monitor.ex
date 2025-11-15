@@ -36,8 +36,8 @@ defmodule AsyncMonitor do
 
   @impl true
   def handle_call(:get_state, _from, state) do
-    #TODO: health checkers should probably have an id.
-    {:reply, state, state}
+    results = Enum.map(state, fn {_health_checker, result} -> result end)
+    {:reply, results, state}
   end
 
   @impl true
@@ -46,7 +46,7 @@ defmodule AsyncMonitor do
      :poll ->
       new_state = poll_state(state)
       Process.send_after(self(), :poll, @poll_time_in_ms)
-      {:no_reply, new_state}
+      {:noreply, new_state}
    end
   end
 
@@ -57,16 +57,13 @@ defmodule AsyncMonitor do
 
   defp poll_state(state) do
 
-    async_monitor_funcs = state
-    |> Enum.map(fn {health_checker, _state} -> {health_checker, health_checker.()} end)
-    |> Task.async()
+    tasks = state
+    |> Enum.map(fn {health_checker, _state} -> Task.async(health_checker) end)
 
-    Task.await_many(async_monitor_funcs, @timeout_in_ms)
-    |> case do
-      {:error, reason} -> List.duplicate({:halt, reason}, length(state))
-      awaited_responses -> awaited_responses
-
-    end
+    results = Task.await_many(tasks, @timeout_in_ms)
+    
+    Enum.zip(state, results)
+    |> Enum.map(fn {{health_checker, _old_result}, new_result} -> {health_checker, new_result} end)
 
   end
 
