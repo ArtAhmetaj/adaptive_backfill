@@ -91,8 +91,12 @@ defmodule DefaultPgHealthCheckers do
   end
 
   # helper to parse PostgreSQL interval to seconds
+  defp parse_pg_interval(%Postgrex.Interval{secs: secs, microsecs: microsecs}) do
+    total_secs = secs + microsecs / 1_000_000
+    {total_secs, :seconds}
+  end
+
   defp parse_pg_interval(interval_str) do
-    # "hh:mm:ss" or "hh:mm:ss.ms"
     [h, m, s] =
       interval_str
       |> to_string()
