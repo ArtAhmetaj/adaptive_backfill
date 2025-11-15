@@ -7,7 +7,7 @@ defmodule BatchOperationOptions do
 
   @type t :: %__MODULE__{
           initial_state: any(),
-          handle_batch: (any() -> {:ok, any() | :done} | {:error, any()} | {:halt, any()}),
+          handle_batch: (any() -> {:ok, any()} | {:error, any()} | :done),
           on_complete: (any() -> any()),
           mode: Types.operation_mode(),
           health_checkers: [Types.health_checker()]
@@ -21,10 +21,10 @@ defmodule BatchOperationOptions do
 
   def new(initial_state, handle_batch, on_complete, mode, health_checkers) do
     cond do
-      is_nil(handle_batch) or invalid_handle_batch?(handle_batch) ->
+      is_nil(handle_batch) or not is_function(handle_batch, 1) ->
         {:error, :invalid_handle_batch}
 
-      is_nil(on_complete) or invalid_on_complete?(on_complete) ->
+      not is_nil(on_complete) and not is_function(on_complete, 1) ->
         {:error, :invalid_on_complete}
 
       invalid_mode?(mode) ->
@@ -44,13 +44,6 @@ defmodule BatchOperationOptions do
          }}
     end
   end
-
-  ##
-  ## VALIDATION HELPERS
-  ##
-
-  defp invalid_handle_batch?(func), do: not is_function(func, 1)
-  defp invalid_on_complete?(func), do: not is_function(func, 1)
 
   defp invalid_mode?(:sync),  do: false
   defp invalid_mode?(:async), do: false

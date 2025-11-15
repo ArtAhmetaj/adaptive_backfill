@@ -1,44 +1,58 @@
 defmodule SingleOperationProcessor do
-
   alias SingleOperationOptions
+  alias MonitorResultEvaluator
 
-
-  def process(%SingleOperationOptions{handle: handle, on_complete: on_complete, mode: mode, health_checkers: health_checkers}) do
-    #we need to provide
-
+  def process(%SingleOperationOptions{
+        handle: handle,
+        on_complete: on_complete,
+        mode: mode,
+        health_checkers: health_checkers
+      }) do
     health_cb = build_health_check_callback(mode, health_checkers)
 
-    case handle.(health_cb) do
-      {:ok, _returned_state} -> handle.(health_cb)
-      {:halt, returned_state} ->
-        if !is_nil(on_complete) do
-          on_complete.(returned_state)
-          returned_state
-        else
-          returned_state
-        end
+    result = handle.(health_cb)
 
-      {:error, _reason} = err -> err
+    case result do
+      :done ->
+        if on_complete, do: on_complete.(:done)
+        {:ok, :done}
+
+      {:ok, state} ->
+        if on_complete, do: on_complete.(state)
+        {:ok, state}
+
+      {:halt, state} ->
+        if on_complete, do: on_complete.(state)
+        {:halt, state}
+
+      {:error, _reason} = err ->
+        err
     end
-
-
   end
-
 
   defp build_health_check_callback(:async, health_checkers) do
     {:ok, pid} = AsyncMonitor.start_link(health_checkers)
-    #TODO: have genserver be killed by new_state and halt to handle lifecycle of process
-  fn  ->
-    GenServer.call(pid, :get_state)
-  end
-  end
 
-  defp build_health_check_callback(:sync, health_checkers) do
+    fn ->
+      monitor_results = GenServer.call(pid, :get_state)
 
-    fn  ->
-      SyncMonitor.get_state(health_checkers)
+      if MonitorResultEvaluator.halt?(monitor_results) do
+        {:halt, monitor_results}
+      else
+        :ok
+      end
     end
   end
 
+  defp build_health_check_callback(:sync, health_checkers) do
+    fn ->
+      monitor_results = SyncMonitor.get_state(health_checkers)
 
+      if MonitorResultEvaluator.halt?(monitor_results) do
+        {:halt, monitor_results}
+      else
+        :ok
+      end
+    end
+  end
 end

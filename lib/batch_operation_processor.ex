@@ -1,5 +1,6 @@
 defmodule BatchOperationProcessor do
   alias BatchOperationOptions
+  alias MonitorResultEvaluator
 
   def process(%BatchOperationOptions{
         initial_state: initial_state,
@@ -8,35 +9,36 @@ defmodule BatchOperationProcessor do
         mode: mode,
         health_checkers: health_checkers
       }) do
+    run_batch_cycle(initial_state, handle_batch, on_complete, mode, health_checkers)
+  end
 
-    health_checker = build_health_check_callback(mode, health_checkers)
+  def run_batch_cycle(state, handle_batch, on_complete, mode, health_checkers) do
+    case handle_batch.(state) do
+      :done ->
+        if on_complete, do: on_complete.(:done)
+        {:ok, :done}
 
-    with {:ok, state_after_batch} <- handle_batch.(initial_state),
-         :ok <- health_checker.(),
-         {:ok, final_state} <- handle_batch.(state_after_batch) do
-      final_state
-    else
-      {:halt, reason} = halt ->
-        on_complete.(reason)
-        halt
+      {:ok, next_state} ->
+        monitor_results = run_health_checks(mode, health_checkers)
 
-      other ->
-        other
+        if MonitorResultEvaluator.halt?(monitor_results) do
+          if on_complete, do: on_complete.(next_state)
+          {:halt, next_state}
+        else
+          run_batch_cycle(next_state, handle_batch, on_complete, mode, health_checkers)
+        end
+
+      {:error, reason} = err ->
+        err
     end
   end
 
-
-  defp build_health_check_callback(:async, health_checkers) do
+  defp run_health_checks(:async, health_checkers) do
     {:ok, pid} = AsyncMonitor.start_link(health_checkers)
-
-    fn ->
-      GenServer.call(pid, :get_state)
-    end
+    GenServer.call(pid, :get_state)
   end
 
-  defp build_health_check_callback(:sync, health_checkers) do
-    fn ->
-      SyncMonitor.get_state(health_checkers)
-    end
+  defp run_health_checks(:sync, health_checkers) do
+    SyncMonitor.get_state(health_checkers)
   end
 end

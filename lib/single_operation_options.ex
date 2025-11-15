@@ -8,7 +8,7 @@ defmodule SingleOperationOptions do
   @type health_check :: (-> :ok | {:halt, any()})
 
   @type t :: %__MODULE__{
-          handle: (health_check() -> {:ok, any()} | {:error, any()} | {:halt, any()}),
+          handle: (health_check() -> {:ok, any()} | {:error, any()} | {:halt, any()} | :done),
           on_complete: (any() -> any()),
           mode: Types.operation_mode(),
           health_checkers: [Types.health_checker()]
@@ -19,10 +19,10 @@ defmodule SingleOperationOptions do
 
   def new(handle, on_complete, mode, health_checkers) do
     cond do
-      is_nil(handle) ->
+      is_nil(handle) or not is_function(handle, 1) ->
         {:error, :invalid_handle}
 
-      invalid_on_complete?(on_complete) ->
+      not is_nil(on_complete) and not is_function(on_complete, 1) ->
         {:error, :invalid_on_complete}
 
       invalid_mode?(mode) ->
@@ -41,8 +41,6 @@ defmodule SingleOperationOptions do
          }}
     end
   end
-
-  defp invalid_on_complete?(func), do: not is_function(func, 1)
 
   defp invalid_mode?(:sync),  do: false
   defp invalid_mode?(:async), do: false
