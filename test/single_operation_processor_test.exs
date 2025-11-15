@@ -36,9 +36,11 @@ defmodule SingleOperationProcessorTest do
 
     test "calls on_complete when operation returns :done" do
       handle = fn _health_check -> :done end
-      on_complete = fn state -> 
+
+      on_complete = fn state ->
         :erlang.put(:on_complete_called, state)
       end
+
       health_checkers = [fn -> :ok end]
 
       {:ok, opts} = SingleOperationOptions.new(handle, on_complete, :sync, health_checkers)
@@ -49,9 +51,11 @@ defmodule SingleOperationProcessorTest do
 
     test "calls on_complete when operation returns {:ok, state}" do
       handle = fn _health_check -> {:ok, :result} end
-      on_complete = fn state -> 
+
+      on_complete = fn state ->
         :erlang.put(:on_complete_called, state)
       end
+
       health_checkers = [fn -> :ok end]
 
       {:ok, opts} = SingleOperationOptions.new(handle, on_complete, :sync, health_checkers)
@@ -62,9 +66,11 @@ defmodule SingleOperationProcessorTest do
 
     test "calls on_complete when operation returns {:halt, state}" do
       handle = fn _health_check -> {:halt, :halted} end
-      on_complete = fn state -> 
+
+      on_complete = fn state ->
         :erlang.put(:on_complete_called, state)
       end
+
       health_checkers = [fn -> :ok end]
 
       {:ok, opts} = SingleOperationOptions.new(handle, on_complete, :sync, health_checkers)
@@ -75,9 +81,11 @@ defmodule SingleOperationProcessorTest do
 
     test "does not call on_complete when operation returns error" do
       handle = fn _health_check -> {:error, :failed} end
-      on_complete = fn state -> 
+
+      on_complete = fn state ->
         :erlang.put(:on_complete_called, state)
       end
+
       health_checkers = [fn -> :ok end]
 
       {:ok, opts} = SingleOperationOptions.new(handle, on_complete, :sync, health_checkers)
@@ -91,6 +99,7 @@ defmodule SingleOperationProcessorTest do
         result = health_check.()
         if result == :ok, do: :done, else: {:halt, result}
       end
+
       health_checkers = [fn -> :ok end, fn -> :ok end]
 
       {:ok, opts} = SingleOperationOptions.new(handle, nil, :sync, health_checkers)
@@ -100,11 +109,13 @@ defmodule SingleOperationProcessorTest do
     test "health check callback returns {:halt, results} when health fails" do
       handle = fn health_check ->
         result = health_check.()
+
         case result do
           :ok -> :done
           {:halt, _} -> {:halt, result}
         end
       end
+
       health_checkers = [fn -> :ok end, fn -> {:halt, :unhealthy} end]
 
       {:ok, opts} = SingleOperationOptions.new(handle, nil, :sync, health_checkers)
@@ -113,20 +124,22 @@ defmodule SingleOperationProcessorTest do
 
     test "operation can check health multiple times" do
       call_count = :counters.new(1, [])
+
       handle = fn health_check ->
         result1 = health_check.()
         :counters.add(call_count, 1, 1)
-        
+
         result2 = health_check.()
         :counters.add(call_count, 1, 1)
-        
+
         if result1 == :ok and result2 == :ok, do: :done, else: {:halt, :failed}
       end
+
       health_checkers = [fn -> :ok end]
 
       {:ok, opts} = SingleOperationOptions.new(handle, nil, :sync, health_checkers)
       result = SingleOperationProcessor.process(opts)
-      
+
       assert {:ok, :done} = result
       assert :counters.get(call_count, 1) == 2
     end
@@ -138,6 +151,7 @@ defmodule SingleOperationProcessorTest do
           {:halt, _} -> {:halt, :stopped_due_to_health}
         end
       end
+
       health_checkers = [fn -> {:halt, :bad_health} end]
 
       {:ok, opts} = SingleOperationOptions.new(handle, nil, :sync, health_checkers)
@@ -159,6 +173,7 @@ defmodule SingleOperationProcessorTest do
         result = health_check.()
         if result == :ok, do: :done, else: {:halt, result}
       end
+
       health_checkers = [fn -> :ok end]
 
       {:ok, opts} = SingleOperationOptions.new(handle, nil, :async, health_checkers)
@@ -168,11 +183,13 @@ defmodule SingleOperationProcessorTest do
     test "async health check can return halt" do
       handle = fn health_check ->
         result = health_check.()
+
         case result do
           :ok -> :done
           {:halt, _} -> {:halt, result}
         end
       end
+
       health_checkers = [fn -> {:halt, :async_fail} end]
 
       {:ok, opts} = SingleOperationOptions.new(handle, nil, :async, health_checkers)

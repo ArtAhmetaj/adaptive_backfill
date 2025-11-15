@@ -45,12 +45,12 @@ defmodule BatchOperationOptions do
     end
   end
 
-  defp invalid_mode?(:sync),  do: false
+  defp invalid_mode?(:sync), do: false
   defp invalid_mode?(:async), do: false
-  defp invalid_mode?(_),      do: true
+  defp invalid_mode?(_), do: true
 
   defp invalid_health_checkers?(nil), do: true
-  defp invalid_health_checkers?([]),  do: true
+  defp invalid_health_checkers?([]), do: true
 
   defp invalid_health_checkers?(checks),
     do: not Enum.all?(checks, &is_function(&1, 0))

@@ -1,4 +1,7 @@
 defmodule SingleOperationProcessor do
+  @moduledoc """
+  Processes single operations with health checks. The user controls the operations and has a health_check callback to handle the check imperatively.
+  """
   alias SingleOperationOptions
   alias MonitorResultEvaluator
 

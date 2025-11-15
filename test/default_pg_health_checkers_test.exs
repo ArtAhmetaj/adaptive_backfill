@@ -34,7 +34,14 @@ defmodule DefaultPgHealthCheckersTest do
       Mimic.expect(repo, :query!, fn _sql ->
         %Postgrex.Result{
           rows: [
-            [1234, %Postgrex.Interval{months: 0, days: 0, secs: 120, microsecs: 0}, "active", nil, nil, "SELECT * FROM large_table"]
+            [
+              1234,
+              %Postgrex.Interval{months: 0, days: 0, secs: 120, microsecs: 0},
+              "active",
+              nil,
+              nil,
+              "SELECT * FROM large_table"
+            ]
           ]
         }
       end)

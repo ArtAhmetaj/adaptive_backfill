@@ -17,12 +17,16 @@ defmodule BatchOperationProcessorTest do
 
     test "calls on_complete when done" do
       handle_batch = fn state -> if state < 2, do: {:ok, state + 1}, else: :done end
-      on_complete = fn state -> 
+
+      on_complete = fn state ->
         :erlang.put(:on_complete_called, state)
       end
+
       health_checkers = [fn -> :ok end]
 
-      {:ok, opts} = BatchOperationOptions.new(0, handle_batch, on_complete, :sync, health_checkers)
+      {:ok, opts} =
+        BatchOperationOptions.new(0, handle_batch, on_complete, :sync, health_checkers)
+
       BatchOperationProcessor.process(opts)
 
       assert :erlang.get(:on_complete_called) == :done
@@ -30,6 +34,7 @@ defmodule BatchOperationProcessorTest do
 
     test "halts when health check returns halt" do
       handle_batch = fn state -> {:ok, state + 1} end
+
       health_checkers = [
         fn -> :ok end,
         fn -> {:halt, :unhealthy} end
@@ -41,12 +46,16 @@ defmodule BatchOperationProcessorTest do
 
     test "calls on_complete when halted" do
       handle_batch = fn state -> {:ok, state + 1} end
-      on_complete = fn state -> 
+
+      on_complete = fn state ->
         :erlang.put(:on_complete_called, state)
       end
+
       health_checkers = [fn -> {:halt, :stop} end]
 
-      {:ok, opts} = BatchOperationOptions.new(0, handle_batch, on_complete, :sync, health_checkers)
+      {:ok, opts} =
+        BatchOperationOptions.new(0, handle_batch, on_complete, :sync, health_checkers)
+
       BatchOperationProcessor.process(opts)
 
       assert :erlang.get(:on_complete_called) == 1

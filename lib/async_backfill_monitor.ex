@@ -1,4 +1,7 @@
 defmodule AsyncBackfillMonitor do
+  @moduledoc """
+  Monitors async backfill operations. Provides state of provided health checks, to see if system is still valid.
+  """
   use GenServer
 
   def start_link(init_state) do
@@ -9,12 +12,10 @@ defmodule AsyncBackfillMonitor do
     GenServer.call(__MODULE__, :get_state)
   end
 
-
   @impl true
   def init(initial_state) do
     {:ok, initial_state}
   end
-
 
   # Handle synchronous calls
   @impl true
@@ -26,7 +27,4 @@ defmodule AsyncBackfillMonitor do
   def handle_call(_request, _from, state) do
     {:reply, {:error, :unknown_operation}, state}
   end
-
-
-
 end

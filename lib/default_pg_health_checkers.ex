@@ -41,11 +41,10 @@ defmodule DefaultPgHealthCheckers do
   """
 
   @type repo() :: module()
-  @type health_result() :: :ok | {:halt, String.t()} #todo: duplicated.
-
+  @type health_result() :: :ok | {:halt, String.t()}
 
   def pg_health_checks(repo) do
-    [&long_waiting_queries/1,&hot_io_tables/1,&temp_file_usage/1]
+    [&long_waiting_queries/1, &hot_io_tables/1, &temp_file_usage/1]
     |> Enum.map(fn f -> f.(repo) end)
   end
 
@@ -63,7 +62,7 @@ defmodule DefaultPgHealthCheckers do
         secs > 60
       end)
 
-      parse_issue_list(long_queries, :long_queries)
+    parse_issue_list(long_queries, :long_queries)
   end
 
   @spec hot_io_tables(repo()) :: health_result()
@@ -108,5 +107,4 @@ defmodule DefaultPgHealthCheckers do
 
   defp parse_issue_list([], _reason), do: :ok
   defp parse_issue_list(_issue, reason), do: {:halt, reason}
-
 end

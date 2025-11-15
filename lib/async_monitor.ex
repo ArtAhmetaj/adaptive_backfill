@@ -24,14 +24,10 @@ defmodule AsyncMonitor do
     GenServer.call(__MODULE__, :get_state)
   end
 
-
-
   @impl true
   def init(health_checkers) do
-
     start_polling()
     {:ok, zip_health_checks_with_state(health_checkers)}
-
   end
 
   @impl true
@@ -42,34 +38,33 @@ defmodule AsyncMonitor do
 
   @impl true
   def handle_info(msg, state) do
-   case msg do
-     :poll ->
-      new_state = poll_state(state)
-      Process.send_after(self(), :poll, @poll_time_in_ms)
-      {:noreply, new_state}
-   end
+    case msg do
+      :poll ->
+        new_state = poll_state(state)
+        Process.send_after(self(), :poll, @poll_time_in_ms)
+        {:noreply, new_state}
+    end
   end
-
 
   defp start_polling() do
     send(self(), :poll)
   end
 
   defp poll_state(state) do
-
-    tasks = state
-    |> Enum.map(fn {health_checker, _state} -> Task.async(health_checker) end)
+    tasks =
+      state
+      |> Enum.map(fn {health_checker, _state} -> Task.async(health_checker) end)
 
     results = Task.await_many(tasks, @timeout_in_ms)
-    
-    Enum.zip(state, results)
-    |> Enum.map(fn {{health_checker, _old_result}, new_result} -> {health_checker, new_result} end)
 
+    Enum.zip(state, results)
+    |> Enum.map(fn {{health_checker, _old_result}, new_result} ->
+      {health_checker, new_result}
+    end)
   end
 
-
   defp zip_health_checks_with_state(health_checkers) do
-  initial_ok_states = List.duplicate(:ok, length(health_checkers))
-  Enum.zip(health_checkers, initial_ok_states)
-end
+    initial_ok_states = List.duplicate(:ok, length(health_checkers))
+    Enum.zip(health_checkers, initial_ok_states)
+  end
 end

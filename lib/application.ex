@@ -1,4 +1,7 @@
 defmodule AdaptiveBackfill.Application do
+  @moduledoc """
+  Application supervisor.
+  """
   use Application
 
   @impl true

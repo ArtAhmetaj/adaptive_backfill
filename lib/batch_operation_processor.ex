@@ -1,4 +1,7 @@
 defmodule BatchOperationProcessor do
+  @moduledoc """
+  Processes batches of operations with health checks. The library handles the health checks by batches and the user does not control the process.
+  """
   alias BatchOperationOptions
   alias MonitorResultEvaluator
 
