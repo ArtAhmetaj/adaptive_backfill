@@ -10,19 +10,19 @@ defmodule AdaptiveBackfillTest do
     use AdaptiveBackfill
 
     single_operation :process_item do
-      mode :sync
-      health_checks [fn -> :ok end]
-      handle fn _health_check -> :done end
+      mode(:sync)
+      health_checks([fn -> :ok end])
+      handle(fn _health_check -> :done end)
     end
 
     batch_operation :process_items, initial_state: 0 do
-      mode :sync
-      health_checks [fn -> :ok end]
+      mode(:sync)
+      health_checks([fn -> :ok end])
 
-      handle_batch fn
+      handle_batch(fn
         0 -> {:ok, 1}
         1 -> :done
-      end
+      end)
     end
   end
 
@@ -65,33 +65,33 @@ defmodule AdaptiveBackfillTest do
       use AdaptiveBackfill
 
       single_operation :test_single do
-        mode :sync
-        health_checks [fn -> :ok end]
-        timeout 5000
-        telemetry_prefix [:test, :single]
+        mode(:sync)
+        health_checks([fn -> :ok end])
+        timeout(5000)
+        telemetry_prefix([:test, :single])
 
-        handle fn _hc -> :done end
+        handle(fn _hc -> :done end)
 
-        on_success fn _result -> :ok end
-        on_error fn _error -> :ok end
-        on_complete fn _result -> :ok end
+        on_success(fn _result -> :ok end)
+        on_error(fn _error -> :ok end)
+        on_complete(fn _result -> :ok end)
       end
 
       batch_operation :test_batch, initial_state: 0 do
-        mode :async
-        health_checks [fn -> :ok end]
-        delay_between_batches 100
-        timeout 10_000
-        batch_size 50
-        telemetry_prefix [:test, :batch]
+        mode(:async)
+        health_checks([fn -> :ok end])
+        delay_between_batches(100)
+        timeout(10_000)
+        batch_size(50)
+        telemetry_prefix([:test, :batch])
 
-        handle_batch fn state ->
+        handle_batch(fn state ->
           if state < 1, do: {:ok, state + 1}, else: :done
-        end
+        end)
 
-        on_success fn _state -> :ok end
-        on_error fn _error, _state -> :ok end
-        on_complete fn _result -> :ok end
+        on_success(fn _state -> :ok end)
+        on_error(fn _error, _state -> :ok end)
+        on_complete(fn _result -> :ok end)
       end
     end
 
@@ -200,15 +200,15 @@ defmodule AdaptiveBackfillTest do
       use AdaptiveBackfill
 
       single_operation :override_single do
-        mode :sync
-        health_checks [fn -> :ok end]
-        handle fn _hc -> {:ok, :default} end
+        mode(:sync)
+        health_checks([fn -> :ok end])
+        handle(fn _hc -> {:ok, :default} end)
       end
 
       batch_operation :override_batch, initial_state: 0 do
-        mode :sync
-        health_checks [fn -> :ok end]
-        handle_batch fn _ -> :done end
+        mode(:sync)
+        health_checks([fn -> :ok end])
+        handle_batch(fn _ -> :done end)
       end
     end
 
@@ -243,9 +243,9 @@ defmodule AdaptiveBackfillTest do
 
       single_operation :invalid_health_checks do
         # Empty health checks should fail
-        mode :sync
-        health_checks []
-        handle fn _hc -> :done end
+        mode(:sync)
+        health_checks([])
+        handle(fn _hc -> :done end)
       end
     end
 
@@ -264,75 +264,75 @@ defmodule AdaptiveBackfillTest do
 
       # Test all single operation options
       single_operation :full_single_op do
-        mode :async
-        health_checks [fn -> :ok end]
-        timeout 30_000
-        telemetry_prefix [:edge, :single]
+        mode(:async)
+        health_checks([fn -> :ok end])
+        timeout(30_000)
+        telemetry_prefix([:edge, :single])
 
-        handle fn health_check ->
+        handle(fn health_check ->
           case health_check.() do
             :ok -> {:ok, :result}
             {:halt, reason} -> {:halt, reason}
           end
-        end
+        end)
 
-        on_success fn result -> send(self(), {:success, result}) end
-        on_error fn error -> send(self(), {:error, error}) end
-        on_complete fn result -> send(self(), {:complete, result}) end
+        on_success(fn result -> send(self(), {:success, result}) end)
+        on_error(fn error -> send(self(), {:error, error}) end)
+        on_complete(fn result -> send(self(), {:complete, result}) end)
       end
 
       # Test minimal single operation
       single_operation :minimal_single do
-        health_checks [fn -> :ok end]
-        handle fn _hc -> :done end
+        health_checks([fn -> :ok end])
+        handle(fn _hc -> :done end)
       end
 
       # Test all batch operation options
       batch_operation :full_batch_op, initial_state: 0 do
-        mode :async
-        health_checks [fn -> :ok end]
-        delay_between_batches 50
-        timeout 10_000
-        batch_size 10
-        telemetry_prefix [:edge, :batch]
+        mode(:async)
+        health_checks([fn -> :ok end])
+        delay_between_batches(50)
+        timeout(10_000)
+        batch_size(10)
+        telemetry_prefix([:edge, :batch])
 
-        handle_batch fn
+        handle_batch(fn
           0 -> {:ok, 1}
           _ -> :done
-        end
+        end)
 
-        on_success fn state -> send(self(), {:batch_success, state}) end
-        on_error fn error, state -> send(self(), {:batch_error, error, state}) end
-        on_complete fn result -> send(self(), {:batch_complete, result}) end
+        on_success(fn state -> send(self(), {:batch_success, state}) end)
+        on_error(fn error, state -> send(self(), {:batch_error, error, state}) end)
+        on_complete(fn result -> send(self(), {:batch_complete, result}) end)
       end
 
       # Test minimal batch operation
       batch_operation :minimal_batch, initial_state: 0 do
-        health_checks [fn -> :ok end]
-        handle_batch fn _ -> :done end
+        health_checks([fn -> :ok end])
+        handle_batch(fn _ -> :done end)
       end
 
       # Test single operation returning different result types
       single_operation :returns_ok_tuple do
-        health_checks [fn -> :ok end]
-        handle fn _hc -> {:ok, %{data: "test"}} end
+        health_checks([fn -> :ok end])
+        handle(fn _hc -> {:ok, %{data: "test"}} end)
       end
 
       single_operation :returns_halt do
-        health_checks [fn -> :ok end]
-        handle fn _hc -> {:halt, :stopped} end
+        health_checks([fn -> :ok end])
+        handle(fn _hc -> {:halt, :stopped} end)
       end
 
       single_operation :returns_error do
-        health_checks [fn -> :ok end]
-        handle fn _hc -> {:error, :failed} end
+        health_checks([fn -> :ok end])
+        handle(fn _hc -> {:error, :failed} end)
       end
 
       # Test batch with error
       batch_operation :batch_with_error, initial_state: 0 do
-        health_checks [fn -> :ok end]
-        handle_batch fn _ -> {:error, :batch_failed} end
-        on_error fn error, state -> send(self(), {:caught_error, error, state}) end
+        health_checks([fn -> :ok end])
+        handle_batch(fn _ -> {:error, :batch_failed} end)
+        on_error(fn error, state -> send(self(), {:caught_error, error, state}) end)
       end
     end
 
@@ -379,27 +379,27 @@ defmodule AdaptiveBackfillTest do
       use AdaptiveBackfill
 
       single_operation :override_all do
-        mode :sync
-        health_checks [fn -> :ok end]
-        timeout 1000
-        telemetry_prefix [:default]
-        handle fn _hc -> {:ok, :default} end
-        on_success fn _ -> send(self(), :default_success) end
-        on_error fn _ -> send(self(), :default_error) end
-        on_complete fn _ -> send(self(), :default_complete) end
+        mode(:sync)
+        health_checks([fn -> :ok end])
+        timeout(1000)
+        telemetry_prefix([:default])
+        handle(fn _hc -> {:ok, :default} end)
+        on_success(fn _ -> send(self(), :default_success) end)
+        on_error(fn _ -> send(self(), :default_error) end)
+        on_complete(fn _ -> send(self(), :default_complete) end)
       end
 
       batch_operation :override_batch_all, initial_state: 0 do
-        mode :sync
-        health_checks [fn -> :ok end]
-        delay_between_batches 100
-        timeout 1000
-        batch_size 10
-        telemetry_prefix [:default]
-        handle_batch fn _ -> :done end
-        on_success fn _ -> send(self(), :default_batch_success) end
-        on_error fn _, _ -> send(self(), :default_batch_error) end
-        on_complete fn _ -> send(self(), :default_batch_complete) end
+        mode(:sync)
+        health_checks([fn -> :ok end])
+        delay_between_batches(100)
+        timeout(1000)
+        batch_size(10)
+        telemetry_prefix([:default])
+        handle_batch(fn _ -> :done end)
+        on_success(fn _ -> send(self(), :default_batch_success) end)
+        on_error(fn _, _ -> send(self(), :default_batch_error) end)
+        on_complete(fn _ -> send(self(), :default_batch_complete) end)
       end
     end
 
@@ -460,21 +460,21 @@ defmodule AdaptiveBackfillTest do
       use AdaptiveBackfill
 
       batch_operation :with_telemetry, initial_state: 0 do
-        mode :sync
-        health_checks [fn -> :ok end]
-        telemetry_prefix [:test, :backfill]
+        mode(:sync)
+        health_checks([fn -> :ok end])
+        telemetry_prefix([:test, :backfill])
 
-        handle_batch fn
+        handle_batch(fn
           state when state < 2 -> {:ok, state + 1}
           _ -> :done
-        end
+        end)
       end
 
       single_operation :single_with_telemetry do
-        mode :sync
-        health_checks [fn -> :ok end]
-        telemetry_prefix [:test, :single]
-        handle fn _hc -> :done end
+        mode(:sync)
+        health_checks([fn -> :ok end])
+        telemetry_prefix([:test, :single])
+        handle(fn _hc -> :done end)
       end
     end
 
@@ -538,13 +538,13 @@ defmodule AdaptiveBackfillTest do
       use AdaptiveBackfill
 
       batch_operation :no_telemetry, initial_state: 0 do
-        mode :sync
-        health_checks [fn -> :ok end]
+        mode(:sync)
+        health_checks([fn -> :ok end])
 
-        handle_batch fn
+        handle_batch(fn
           0 -> {:ok, 1}
           _ -> :done
-        end
+        end)
       end
     end
 

@@ -47,7 +47,7 @@ defmodule BatchOperationOptions do
     batch_size = Keyword.get(opts, :batch_size)
     telemetry_prefix = Keyword.get(opts, :telemetry_prefix)
     checkpoint = Keyword.get(opts, :checkpoint)
-    
+
     cond do
       is_nil(handle_batch) or not is_function(handle_batch, 1) ->
         {:error, :invalid_handle_batch}

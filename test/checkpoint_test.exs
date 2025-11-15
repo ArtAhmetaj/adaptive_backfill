@@ -11,7 +11,7 @@ defmodule CheckpointTest do
     test "saves and loads state" do
       state = %{offset: 100, count: 50}
       checkpoint = Checkpoint.new(Checkpoint.Memory, "test_checkpoint")
-      
+
       assert :ok = Checkpoint.save(checkpoint, state)
       assert {:ok, ^state} = Checkpoint.load(checkpoint)
     end
@@ -25,7 +25,7 @@ defmodule CheckpointTest do
       checkpoint = Checkpoint.new(Checkpoint.Memory, "test")
       Checkpoint.save(checkpoint, %{data: "value"})
       assert {:ok, _} = Checkpoint.load(checkpoint)
-      
+
       assert :ok = Checkpoint.delete(checkpoint)
       assert {:error, :not_found} = Checkpoint.load(checkpoint)
     end
@@ -33,10 +33,10 @@ defmodule CheckpointTest do
     test "handles multiple checkpoints" do
       cp1 = Checkpoint.new(Checkpoint.Memory, "checkpoint1")
       cp2 = Checkpoint.new(Checkpoint.Memory, "checkpoint2")
-      
+
       Checkpoint.save(cp1, %{id: 1})
       Checkpoint.save(cp2, %{id: 2})
-      
+
       assert {:ok, %{id: 1}} = Checkpoint.load(cp1)
       assert {:ok, %{id: 2}} = Checkpoint.load(cp2)
     end
@@ -45,7 +45,7 @@ defmodule CheckpointTest do
       checkpoint = Checkpoint.new(Checkpoint.Memory, "test")
       Checkpoint.save(checkpoint, %{version: 1})
       Checkpoint.save(checkpoint, %{version: 2})
-      
+
       assert {:ok, %{version: 2}} = Checkpoint.load(checkpoint)
     end
 
@@ -66,7 +66,7 @@ defmodule CheckpointTest do
     test "saves and loads state" do
       state = %{offset: 200, items: ["a", "b", "c"]}
       checkpoint = Checkpoint.new(Checkpoint.ETS, :my_checkpoint)
-      
+
       assert :ok = Checkpoint.save(checkpoint, state)
       assert {:ok, ^state} = Checkpoint.load(checkpoint)
     end
@@ -80,7 +80,7 @@ defmodule CheckpointTest do
       checkpoint = Checkpoint.new(Checkpoint.ETS, "test")
       Checkpoint.save(checkpoint, %{value: 123})
       assert {:ok, _} = Checkpoint.load(checkpoint)
-      
+
       assert :ok = Checkpoint.delete(checkpoint)
       assert {:error, :not_found} = Checkpoint.load(checkpoint)
     end
@@ -88,10 +88,10 @@ defmodule CheckpointTest do
     test "handles atom and string names" do
       cp_atom = Checkpoint.new(Checkpoint.ETS, :atom_name)
       cp_string = Checkpoint.new(Checkpoint.ETS, "string_name")
-      
+
       Checkpoint.save(cp_atom, %{type: :atom})
       Checkpoint.save(cp_string, %{type: :string})
-      
+
       assert {:ok, %{type: :atom}} = Checkpoint.load(cp_atom)
       assert {:ok, %{type: :string}} = Checkpoint.load(cp_string)
     end
@@ -99,15 +99,16 @@ defmodule CheckpointTest do
     test "persists across multiple calls" do
       checkpoint = Checkpoint.new(Checkpoint.ETS, "persistent")
       Checkpoint.save(checkpoint, %{count: 1})
-      
+
       # Simulate multiple processes accessing
-      tasks = for _i <- 1..5 do
-        Task.async(fn ->
-          {:ok, state} = Checkpoint.load(checkpoint)
-          state
-        end)
-      end
-      
+      tasks =
+        for _i <- 1..5 do
+          Task.async(fn ->
+            {:ok, state} = Checkpoint.load(checkpoint)
+            state
+          end)
+        end
+
       results = Task.await_many(tasks)
       assert Enum.all?(results, &(&1 == %{count: 1}))
     end
@@ -124,7 +125,11 @@ defmodule CheckpointTest do
 
       @impl true
       def save(name, state) do
-        Agent.update(__MODULE__, &Map.put(&1, name, %{state: state, timestamp: System.monotonic_time()}))
+        Agent.update(
+          __MODULE__,
+          &Map.put(&1, name, %{state: state, timestamp: System.monotonic_time()})
+        )
+
         :ok
       end
 
@@ -150,7 +155,7 @@ defmodule CheckpointTest do
 
     test "custom adapter works" do
       checkpoint = Checkpoint.new(CustomAdapter, "custom")
-      
+
       assert :ok = Checkpoint.save(checkpoint, %{custom: true})
       assert {:ok, %{custom: true}} = Checkpoint.load(checkpoint)
       assert :ok = Checkpoint.delete(checkpoint)

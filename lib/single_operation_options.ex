@@ -18,7 +18,16 @@ defmodule SingleOperationOptions do
           telemetry_prefix: [atom()] | nil
         }
 
-  defstruct [:handle, :on_complete, :on_success, :on_error, :mode, :health_checkers, :timeout, :telemetry_prefix]
+  defstruct [
+    :handle,
+    :on_complete,
+    :on_success,
+    :on_error,
+    :mode,
+    :health_checkers,
+    :timeout,
+    :telemetry_prefix
+  ]
 
   def new(handle, on_complete, mode, health_checkers, opts \\ []) do
     on_success = Keyword.get(opts, :on_success)

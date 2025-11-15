@@ -85,10 +85,10 @@ defmodule AdaptiveBackfill do
   """
   defmacro single_operation(name, do: block) do
     config = extract_dsl_config(block)
-    
+
     quote do
       @backfills {:single, unquote(name)}
-      
+
       def unquote(name)(opts \\ []) do
         handle = Keyword.get(opts, :handle, unquote(config[:handle]))
         on_complete = Keyword.get(opts, :on_complete, unquote(config[:on_complete]))
@@ -97,15 +97,17 @@ defmodule AdaptiveBackfill do
         mode = Keyword.get(opts, :mode, unquote(config[:mode] || :sync))
         health_checks = Keyword.get(opts, :health_checks, unquote(config[:health_checks]))
         timeout = Keyword.get(opts, :timeout, unquote(config[:timeout]))
-        telemetry_prefix = Keyword.get(opts, :telemetry_prefix, unquote(config[:telemetry_prefix]))
-        
+
+        telemetry_prefix =
+          Keyword.get(opts, :telemetry_prefix, unquote(config[:telemetry_prefix]))
+
         single_opts = [
           on_success: on_success,
           on_error: on_error,
           timeout: timeout,
           telemetry_prefix: telemetry_prefix
         ]
-        
+
         case SingleOperationOptions.new(handle, on_complete, mode, health_checks, single_opts) do
           {:ok, options} -> SingleOperationProcessor.process(options)
           {:error, reason} -> {:error, reason}
@@ -147,10 +149,10 @@ defmodule AdaptiveBackfill do
   defmacro batch_operation(name, opts \\ [], do: block) do
     initial_state = Keyword.get(opts, :initial_state)
     config = extract_dsl_config(block)
-    
+
     quote do
       @backfills {:batch, unquote(name)}
-      
+
       def unquote(name)(opts \\ []) do
         handle_batch = Keyword.get(opts, :handle_batch, unquote(config[:handle_batch]))
         on_complete = Keyword.get(opts, :on_complete, unquote(config[:on_complete]))
@@ -159,11 +161,16 @@ defmodule AdaptiveBackfill do
         mode = Keyword.get(opts, :mode, unquote(config[:mode] || :sync))
         health_checks = Keyword.get(opts, :health_checks, unquote(config[:health_checks]))
         initial_state = Keyword.get(opts, :initial_state, unquote(initial_state))
-        delay_between_batches = Keyword.get(opts, :delay_between_batches, unquote(config[:delay_between_batches]))
+
+        delay_between_batches =
+          Keyword.get(opts, :delay_between_batches, unquote(config[:delay_between_batches]))
+
         timeout = Keyword.get(opts, :timeout, unquote(config[:timeout]))
         batch_size = Keyword.get(opts, :batch_size, unquote(config[:batch_size]))
-        telemetry_prefix = Keyword.get(opts, :telemetry_prefix, unquote(config[:telemetry_prefix]))
-        
+
+        telemetry_prefix =
+          Keyword.get(opts, :telemetry_prefix, unquote(config[:telemetry_prefix]))
+
         batch_opts = [
           on_success: on_success,
           on_error: on_error,
@@ -172,8 +179,15 @@ defmodule AdaptiveBackfill do
           batch_size: batch_size,
           telemetry_prefix: telemetry_prefix
         ]
-        
-        case BatchOperationOptions.new(initial_state, handle_batch, on_complete, mode, health_checks, batch_opts) do
+
+        case BatchOperationOptions.new(
+               initial_state,
+               handle_batch,
+               on_complete,
+               mode,
+               health_checks,
+               batch_opts
+             ) do
           {:ok, options} -> BatchOperationProcessor.process(options)
           {:error, reason} -> {:error, reason}
         end
@@ -200,7 +214,7 @@ defmodule AdaptiveBackfill do
       end
     end)
   end
-  
+
   def extract_dsl_config(single_expr) do
     case single_expr do
       {:mode, _, [value]} -> %{mode: value}

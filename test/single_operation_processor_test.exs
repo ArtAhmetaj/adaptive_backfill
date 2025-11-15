@@ -224,9 +224,7 @@ defmodule SingleOperationProcessorTest do
       health_checkers = [fn -> :ok end]
 
       {:ok, opts} =
-        SingleOperationOptions.new(handle, nil, :sync, health_checkers,
-          on_error: on_error
-        )
+        SingleOperationOptions.new(handle, nil, :sync, health_checkers, on_error: on_error)
 
       SingleOperationProcessor.process(opts)
       assert_receive {:error_caught, %RuntimeError{message: "Test error"}}
@@ -244,9 +242,7 @@ defmodule SingleOperationProcessorTest do
       health_checkers = [fn -> :ok end]
 
       {:ok, opts} =
-        SingleOperationOptions.new(handle, nil, :sync, health_checkers,
-          on_success: on_success
-        )
+        SingleOperationOptions.new(handle, nil, :sync, health_checkers, on_success: on_success)
 
       SingleOperationProcessor.process(opts)
       assert_receive {:success, :success}
@@ -262,9 +258,7 @@ defmodule SingleOperationProcessorTest do
       health_checkers = [fn -> :ok end]
 
       {:ok, opts} =
-        SingleOperationOptions.new(handle, nil, :sync, health_checkers,
-          on_success: on_success
-        )
+        SingleOperationOptions.new(handle, nil, :sync, health_checkers, on_success: on_success)
 
       SingleOperationProcessor.process(opts)
       refute_receive {:success, _}

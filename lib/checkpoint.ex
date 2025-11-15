@@ -1,7 +1,7 @@
 defmodule Checkpoint do
   @moduledoc """
   Checkpoint configuration for backfill operations.
-  
+
   Allows saving and restoring state so backfills can resume from where they stopped.
   """
 
@@ -25,6 +25,7 @@ defmodule Checkpoint do
   def save(%__MODULE__{adapter: adapter, name: name}, state) do
     adapter.save(name, state)
   end
+
   def save(nil, _state), do: :ok
 
   @doc """
@@ -33,6 +34,7 @@ defmodule Checkpoint do
   def load(%__MODULE__{adapter: adapter, name: name}) do
     adapter.load(name)
   end
+
   def load(nil), do: {:error, :not_found}
 
   @doc """
@@ -41,6 +43,7 @@ defmodule Checkpoint do
   def delete(%__MODULE__{adapter: adapter, name: name}) do
     adapter.delete(name)
   end
+
   def delete(nil), do: :ok
 
   @type checkpoint_name :: String.t() | atom()
@@ -83,6 +86,7 @@ defmodule Checkpoint do
     @impl true
     def load(name) do
       ensure_started()
+
       case Agent.get(__MODULE__, &Map.get(&1, to_string(name))) do
         nil -> {:error, :not_found}
         state -> {:ok, state}
@@ -121,6 +125,7 @@ defmodule Checkpoint do
         :undefined ->
           :ets.new(@table_name, [:named_table, :public, :set])
           {:ok, self()}
+
         _ref ->
           {:ok, self()}
       end
@@ -136,6 +141,7 @@ defmodule Checkpoint do
     @impl true
     def load(name) do
       ensure_started()
+
       case :ets.lookup(@table_name, to_string(name)) do
         [{_, state}] -> {:ok, state}
         [] -> {:error, :not_found}

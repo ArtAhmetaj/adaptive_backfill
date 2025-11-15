@@ -41,31 +41,48 @@ defmodule SingleOperationProcessor do
           {:ok, :done}
 
         {:ok, state} ->
-          emit_telemetry(telemetry_prefix, [:success], %{state: state, duration: duration}, %{mode: mode})
+          emit_telemetry(telemetry_prefix, [:success], %{state: state, duration: duration}, %{
+            mode: mode
+          })
+
           if on_success, do: on_success.(state)
           if on_complete, do: on_complete.(state)
           {:ok, state}
 
         {:halt, state} ->
-          emit_telemetry(telemetry_prefix, [:halt], %{state: state, duration: duration}, %{mode: mode})
+          emit_telemetry(telemetry_prefix, [:halt], %{state: state, duration: duration}, %{
+            mode: mode
+          })
+
           if on_complete, do: on_complete.(state)
           {:halt, state}
 
         {:error, reason} = err ->
-          emit_telemetry(telemetry_prefix, [:error], %{error: reason, duration: duration}, %{mode: mode})
+          emit_telemetry(telemetry_prefix, [:error], %{error: reason, duration: duration}, %{
+            mode: mode
+          })
+
           if on_error, do: on_error.(reason)
           err
       end
     rescue
       error ->
         duration = System.monotonic_time() - start_time
-        emit_telemetry(telemetry_prefix, [:exception], %{error: error, duration: duration}, %{mode: mode})
+
+        emit_telemetry(telemetry_prefix, [:exception], %{error: error, duration: duration}, %{
+          mode: mode
+        })
+
         if on_error, do: on_error.(error)
         {:error, error}
     catch
       :exit, reason ->
         duration = System.monotonic_time() - start_time
-        emit_telemetry(telemetry_prefix, [:exit], %{reason: reason, duration: duration}, %{mode: mode})
+
+        emit_telemetry(telemetry_prefix, [:exit], %{reason: reason, duration: duration}, %{
+          mode: mode
+        })
+
         if on_error, do: on_error.({:exit, reason})
         {:error, {:exit, reason}}
     end
@@ -98,6 +115,7 @@ defmodule SingleOperationProcessor do
   end
 
   defp emit_telemetry(nil, _event, _measurements, _metadata), do: :ok
+
   defp emit_telemetry(prefix, event, measurements, metadata) do
     :telemetry.execute(prefix ++ event, measurements, metadata)
   end

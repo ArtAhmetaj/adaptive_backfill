@@ -5,42 +5,42 @@ defmodule MonitorModulesTest do
     test "starts with initial state" do
       initial_state = %{count: 0}
       {:ok, pid} = AsyncBackfillMonitor.start_link(initial_state)
-      
+
       state = AsyncBackfillMonitor.get_monitored_state()
       assert state == %{state: initial_state}
-      
+
       GenServer.stop(pid)
     end
 
     test "returns state on get_monitored_state" do
       state = %{status: :healthy}
       {:ok, pid} = AsyncBackfillMonitor.start_link(state)
-      
+
       result = AsyncBackfillMonitor.get_monitored_state()
       assert result == %{state: state}
-      
+
       GenServer.stop(pid)
     end
 
     test "handles unknown operations" do
       {:ok, pid} = AsyncBackfillMonitor.start_link(%{})
-      
+
       result = GenServer.call(pid, :unknown_operation)
       assert result == {:error, :unknown_operation}
-      
+
       GenServer.stop(pid)
     end
 
     test "maintains state across multiple calls" do
       initial = %{counter: 42}
       {:ok, pid} = AsyncBackfillMonitor.start_link(initial)
-      
+
       state1 = AsyncBackfillMonitor.get_monitored_state()
       state2 = AsyncBackfillMonitor.get_monitored_state()
-      
+
       assert state1 == state2
       assert state1 == %{state: initial}
-      
+
       GenServer.stop(pid)
     end
   end
@@ -68,11 +68,12 @@ defmodule MonitorModulesTest do
 
     test "executes function side effects" do
       test_pid = self()
+
       func = fn ->
         send(test_pid, :executed)
         :ok
       end
-      
+
       SyncBackfillMonitor.monitor(func)
       assert_receive :executed
     end
@@ -85,7 +86,7 @@ defmodule MonitorModulesTest do
         fn -> :ok end,
         fn -> :ok end
       ]
-      
+
       result = SyncMonitor.get_state(health_checkers)
       assert result == [:ok, :ok, :ok]
     end
@@ -96,7 +97,7 @@ defmodule MonitorModulesTest do
         fn -> {:halt, :unhealthy} end,
         fn -> :ok end
       ]
-      
+
       result = SyncMonitor.get_state(health_checkers)
       assert result == [:ok, {:halt, :unhealthy}, :ok]
     end
@@ -106,29 +107,29 @@ defmodule MonitorModulesTest do
         fn -> {:halt, :db_down} end,
         fn -> {:halt, :memory_high} end
       ]
-      
+
       result = SyncMonitor.get_state(health_checkers)
       assert result == [{:halt, :db_down}, {:halt, :memory_high}]
     end
 
     test "get_state with single health check" do
       health_checkers = [fn -> :ok end]
-      
+
       result = SyncMonitor.get_state(health_checkers)
       assert result == [:ok]
     end
 
     test "get_state executes all health checkers" do
       test_pid = self()
-      
+
       health_checkers = [
         fn -> send(test_pid, :check1) && :ok end,
         fn -> send(test_pid, :check2) && :ok end,
         fn -> send(test_pid, :check3) && :ok end
       ]
-      
+
       SyncMonitor.get_state(health_checkers)
-      
+
       assert_receive :check1
       assert_receive :check2
       assert_receive :check3
@@ -145,30 +146,31 @@ defmodule MonitorModulesTest do
     test "starts and returns health check results" do
       health_checkers = [fn -> :ok end]
       {:ok, pid} = AsyncMonitor.start_link(health_checkers)
-      
+
       # Give it time to run checks
       Process.sleep(100)
-      
+
       result = GenServer.call(pid, :get_state)
       assert result == [:ok]
-      
+
       GenServer.stop(pid)
     end
 
     test "runs health checks in background" do
       test_pid = self()
+
       health_checkers = [
         fn ->
           send(test_pid, :health_check_executed)
           :ok
         end
       ]
-      
+
       {:ok, pid} = AsyncMonitor.start_link(health_checkers)
-      
+
       # Should execute checks in background
       assert_receive :health_check_executed, 1000
-      
+
       GenServer.stop(pid)
     end
 
@@ -177,15 +179,15 @@ defmodule MonitorModulesTest do
         fn -> :ok end,
         fn -> {:halt, :warning} end
       ]
-      
+
       {:ok, pid} = AsyncMonitor.start_link(health_checkers)
       Process.sleep(100)
-      
+
       result = GenServer.call(pid, :get_state)
       assert length(result) == 2
       assert :ok in result
       assert {:halt, :warning} in result
-      
+
       GenServer.stop(pid)
     end
   end
