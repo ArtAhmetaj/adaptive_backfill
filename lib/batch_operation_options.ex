@@ -7,7 +7,7 @@ defmodule BatchOperationOptions do
 
   @type t :: %__MODULE__{
           initial_state: any(),
-          handle_batch: (any() -> any()),
+          handle_batch: (any() -> {:ok, any() | :done} | {:error, any()} | {:halt, any()}),
           on_complete: (any() -> any()),
           mode: Types.operation_mode(),
           health_checkers: [Types.health_checker()]

@@ -17,6 +17,8 @@ defmodule SingleOperationProcessor do
         else
           returned_state
         end
+
+      {:error, _reason} = err -> err
     end
 
 
@@ -26,14 +28,14 @@ defmodule SingleOperationProcessor do
   defp build_health_check_callback(:async, health_checkers) do
     {:ok, pid} = AsyncMonitor.start_link(health_checkers)
     #TODO: have genserver be killed by new_state and halt to handle lifecycle of process
-  fn _ ->
+  fn  ->
     GenServer.call(pid, :get_state)
   end
   end
 
   defp build_health_check_callback(:sync, health_checkers) do
 
-    fn _ ->
+    fn  ->
       SyncMonitor.get_state(health_checkers)
     end
   end
