@@ -3,7 +3,6 @@ defmodule BatchOperationProcessorTest do
 
   alias AdaptiveBackfill.BatchOperationOptions
   alias AdaptiveBackfill.BatchOperationProcessor
-  alias AdaptiveBackfill.Checkpoint
 
   describe "process/1 with sync mode" do
     test "processes batches until done is returned" do
