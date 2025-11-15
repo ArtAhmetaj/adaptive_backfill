@@ -133,6 +133,12 @@ defmodule MonitorModulesTest do
       assert_receive :check2
       assert_receive :check3
     end
+
+    test "get_state with empty health checkers list" do
+      health_checkers = []
+      result = SyncMonitor.get_state(health_checkers)
+      assert result == []
+    end
   end
 
   describe "AsyncMonitor" do

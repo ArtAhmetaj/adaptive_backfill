@@ -196,4 +196,78 @@ defmodule SingleOperationProcessorTest do
       assert {:halt, {:halt, _}} = SingleOperationProcessor.process(opts)
     end
   end
+
+  describe "error handling" do
+    test "catches exceptions in handle function" do
+      handle = fn _health_check -> raise "Intentional error" end
+      health_checkers = [fn -> :ok end]
+
+      {:ok, opts} = SingleOperationOptions.new(handle, nil, :sync, health_checkers)
+      assert {:error, %RuntimeError{}} = SingleOperationProcessor.process(opts)
+    end
+
+    test "catches exits in handle function" do
+      handle = fn _health_check -> exit(:normal) end
+      health_checkers = [fn -> :ok end]
+
+      {:ok, opts} = SingleOperationOptions.new(handle, nil, :sync, health_checkers)
+      assert {:error, {:exit, :normal}} = SingleOperationProcessor.process(opts)
+    end
+
+    test "calls on_error callback when exception occurs" do
+      handle = fn _health_check -> raise "Test error" end
+
+      on_error = fn error ->
+        send(self(), {:error_caught, error})
+      end
+
+      health_checkers = [fn -> :ok end]
+
+      {:ok, opts} =
+        SingleOperationOptions.new(handle, nil, :sync, health_checkers,
+          on_error: on_error
+        )
+
+      SingleOperationProcessor.process(opts)
+      assert_receive {:error_caught, %RuntimeError{message: "Test error"}}
+    end
+  end
+
+  describe "callbacks" do
+    test "calls on_success callback for successful operations" do
+      handle = fn _health_check -> {:ok, :success} end
+
+      on_success = fn result ->
+        send(self(), {:success, result})
+      end
+
+      health_checkers = [fn -> :ok end]
+
+      {:ok, opts} =
+        SingleOperationOptions.new(handle, nil, :sync, health_checkers,
+          on_success: on_success
+        )
+
+      SingleOperationProcessor.process(opts)
+      assert_receive {:success, :success}
+    end
+
+    test "does not call on_success for errors" do
+      handle = fn _health_check -> {:error, :failed} end
+
+      on_success = fn result ->
+        send(self(), {:success, result})
+      end
+
+      health_checkers = [fn -> :ok end]
+
+      {:ok, opts} =
+        SingleOperationOptions.new(handle, nil, :sync, health_checkers,
+          on_success: on_success
+        )
+
+      SingleOperationProcessor.process(opts)
+      refute_receive {:success, _}
+    end
+  end
 end

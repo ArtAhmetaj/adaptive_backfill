@@ -124,4 +124,136 @@ defmodule BatchOperationProcessorTest do
       assert {:halt, 1} = BatchOperationProcessor.process(opts)
     end
   end
+
+  describe "delay_between_batches" do
+    test "adds delay between batch executions" do
+      handle_batch = fn
+        state when state < 3 -> {:ok, state + 1}
+        _ -> :done
+      end
+
+      health_checkers = [fn -> :ok end]
+
+      {:ok, opts} =
+        BatchOperationOptions.new(0, handle_batch, nil, :sync, health_checkers,
+          delay_between_batches: 100
+        )
+
+      start_time = System.monotonic_time(:millisecond)
+      BatchOperationProcessor.process(opts)
+      end_time = System.monotonic_time(:millisecond)
+
+      # 3 batches with 100ms delay = at least 200ms total (2 delays)
+      duration = end_time - start_time
+      assert duration >= 200, "Expected at least 200ms, got #{duration}ms"
+    end
+  end
+
+  describe "error handling" do
+    test "catches exceptions in handle_batch" do
+      handle_batch = fn
+        0 -> raise "Intentional crash"
+        _ -> :done
+      end
+
+      health_checkers = [fn -> :ok end]
+
+      {:ok, opts} = BatchOperationOptions.new(0, handle_batch, nil, :sync, health_checkers)
+      assert {:error, %RuntimeError{}} = BatchOperationProcessor.process(opts)
+    end
+
+    test "calls on_error callback when exception occurs" do
+      handle_batch = fn
+        0 -> raise "Test error"
+        _ -> :done
+      end
+
+      on_error = fn error, state ->
+        send(self(), {:caught_exception, error, state})
+      end
+
+      health_checkers = [fn -> :ok end]
+
+      {:ok, opts} =
+        BatchOperationOptions.new(0, handle_batch, nil, :sync, health_checkers,
+          on_error: on_error
+        )
+
+      BatchOperationProcessor.process(opts)
+      assert_receive {:caught_exception, %RuntimeError{message: "Test error"}, 0}
+    end
+
+    test "calls on_error when handle_batch returns error" do
+      handle_batch = fn
+        0 -> {:error, :test_error}
+        _ -> :done
+      end
+
+      on_error = fn error, state ->
+        send(self(), {:error_caught, error, state})
+      end
+
+      health_checkers = [fn -> :ok end]
+
+      {:ok, opts} =
+        BatchOperationOptions.new(0, handle_batch, nil, :sync, health_checkers,
+          on_error: on_error
+        )
+
+      BatchOperationProcessor.process(opts)
+      assert_receive {:error_caught, :test_error, 0}
+    end
+  end
+
+  describe "callbacks" do
+    test "calls on_success after each successful batch" do
+      handle_batch = fn
+        state when state < 3 -> {:ok, state + 1}
+        _ -> :done
+      end
+
+      on_success = fn state ->
+        send(self(), {:success, state})
+      end
+
+      health_checkers = [fn -> :ok end]
+
+      {:ok, opts} =
+        BatchOperationOptions.new(0, handle_batch, nil, :sync, health_checkers,
+          on_success: on_success
+        )
+
+      BatchOperationProcessor.process(opts)
+
+      # Should receive success for states 1, 2, 3
+      assert_receive {:success, 1}
+      assert_receive {:success, 2}
+      assert_receive {:success, 3}
+    end
+
+    test "does not call on_success when batch returns error" do
+      handle_batch = fn
+        0 -> {:ok, 1}
+        1 -> {:error, :failed}
+        _ -> :done
+      end
+
+      on_success = fn state ->
+        send(self(), {:success, state})
+      end
+
+      health_checkers = [fn -> :ok end]
+
+      {:ok, opts} =
+        BatchOperationOptions.new(0, handle_batch, nil, :sync, health_checkers,
+          on_success: on_success
+        )
+
+      BatchOperationProcessor.process(opts)
+
+      # Should only receive success for state 1
+      assert_receive {:success, 1}
+      refute_receive {:success, _}
+    end
+  end
 end
