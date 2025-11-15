@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-11-15
+
+### Changed
+- Add AdaptiveBackfill namespace prefix to all modules for proper package organization
+- Update all module references to use full namespaced paths
+- Update all test files to use module aliases
+
 ## [0.1.0] - 2025-11-15
 
 ### Added
