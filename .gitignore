@@ -21,3 +21,22 @@ adaptive_backfill-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# IDE and editor files
+.elixir_ls/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
