@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Batch operation processor with health checks
 - Synchronous and asynchronous health monitoring modes
 - PostgreSQL health checkers (long queries, hot I/O tables, temp file usage)
-- Comprehensive test suite with 69 tests
+- Comprehensive test suite with 137 tests
 - CI/CD pipeline with GitHub Actions
 - Code formatting and linting with Credo
 - Docker Compose setup for testing with PostgreSQL
@@ -29,5 +29,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `MonitorResultEvaluator` - Evaluate health check results and determine halt conditions
 - Mimic-based mocking for testability
 
-[Unreleased]: https://github.com/YOUR_USERNAME/adaptive_backfill/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/YOUR_USERNAME/adaptive_backfill/releases/tag/v0.1.0
+[Unreleased]: https://github.com/ArtAhmetaj/adaptive_backfill/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/ArtAhmetaj/adaptive_backfill/releases/tag/v0.1.0

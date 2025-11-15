@@ -48,8 +48,8 @@ defmodule AdaptiveBackfill.MixProject do
       files: ~w(lib examples .formatter.exs mix.exs README.md LICENSE CHANGELOG.md),
       licenses: ["MIT"],
       links: %{
-        "GitHub" => "https://github.com/YOUR_USERNAME/adaptive_backfill",
-        "Changelog" => "https://github.com/YOUR_USERNAME/adaptive_backfill/blob/main/CHANGELOG.md"
+        "GitHub" => "https://github.com/ArtAhmetaj/adaptive_backfill",
+        "Changelog" => "https://github.com/ArtAhmetaj/adaptive_backfill/blob/main/CHANGELOG.md"
       }
     ]
   end
