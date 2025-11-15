@@ -91,9 +91,9 @@ MyApp.Backfills.migrate_users()
 MyApp.Backfills.migrate_users(initial_state: 500, mode: :sync)
 ```
 
-### Legacy API
+### Non-DSL API
 
-You can still use the struct-based API for backwards compatibility:
+You can also use the struct-based API:
 
 ```elixir
 # Single operation
@@ -164,47 +164,6 @@ mix credo
 ```
 
 ## Publishing a New Version
-
-### Automated (Recommended)
-
-Use the Makefile commands to automate version bumping:
-
-```bash
-# Bump patch version (0.1.0 -> 0.1.1)
-make bump-patch
-
-# Bump minor version (0.1.0 -> 0.2.0)
-make bump-minor
-
-# Bump major version (0.1.0 -> 1.0.0)
-make bump-major
-
-# Or specify exact version
-make bump VERSION=0.2.0
-```
-
-This will:
-1. Update `mix.exs` version
-2. Add a new section to `CHANGELOG.md` with today's date
-3. Show you the next steps
-
-Then:
-
-```bash
-# 1. Edit CHANGELOG.md to add your changes
-vim CHANGELOG.md
-
-# 2. Review changes
-git diff
-
-# 3. Create release (runs tests, commits, tags)
-make release
-
-# 4. Push to trigger CI/CD
-make release-push
-```
-
-### Manual Process
 
 1. **Update version in `mix.exs`**:
    ```elixir
