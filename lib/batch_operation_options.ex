@@ -16,7 +16,8 @@ defmodule BatchOperationOptions do
           delay_between_batches: non_neg_integer() | nil,
           timeout: non_neg_integer() | nil,
           batch_size: pos_integer() | nil,
-          telemetry_prefix: [atom()] | nil
+          telemetry_prefix: [atom()] | nil,
+          checkpoint: Checkpoint.t() | nil
         }
 
   defstruct [
@@ -30,7 +31,8 @@ defmodule BatchOperationOptions do
     :delay_between_batches,
     :timeout,
     :batch_size,
-    :telemetry_prefix
+    :telemetry_prefix,
+    :checkpoint
   ]
 
   ##
@@ -44,6 +46,8 @@ defmodule BatchOperationOptions do
     timeout = Keyword.get(opts, :timeout)
     batch_size = Keyword.get(opts, :batch_size)
     telemetry_prefix = Keyword.get(opts, :telemetry_prefix)
+    checkpoint = Keyword.get(opts, :checkpoint)
+    
     cond do
       is_nil(handle_batch) or not is_function(handle_batch, 1) ->
         {:error, :invalid_handle_batch}
@@ -88,7 +92,8 @@ defmodule BatchOperationOptions do
            delay_between_batches: delay_between_batches,
            timeout: timeout,
            batch_size: batch_size,
-           telemetry_prefix: telemetry_prefix
+           telemetry_prefix: telemetry_prefix,
+           checkpoint: checkpoint
          }}
     end
   end

@@ -652,3 +652,95 @@ MyApp.Backfills.migrate_users_to_v2(mode: :sync, delay_between_batches: 0)
 - See [TESTING.md](TESTING.md) for testing strategies
 - Review [CHANGELOG.md](CHANGELOG.md) for version history
 - Explore the [test suite](test/) for more examples
+
+## Checkpointing
+
+Checkpointing allows backfills to save progress and resume from where they stopped if interrupted.
+
+### Basic Usage
+
+```elixir
+batch_operation :migrate_users, initial_state: 0 do
+  mode :async
+  health_checks [&check_database/0]
+  checkpoint Checkpoint.new(Checkpoint.Memory, "user_migration")
+  
+  handle_batch fn offset ->
+    users = fetch_users(offset, 100)
+    if Enum.empty?(users) do
+      :done
+    else
+      migrate_users(users)
+      {:ok, offset + 100}
+    end
+  end
+end
+
+# First run - processes batches and saves checkpoints
+MyBackfills.migrate_users()
+
+# If it fails, restart and it resumes from last checkpoint
+MyBackfills.migrate_users()
+```
+
+### How It Works
+
+- **On Start**: Loads checkpoint if it exists, otherwise starts from `initial_state`
+- **After Each Batch**: Saves current state after successful batch
+- **On Error**: Saves state before returning error
+- **On Completion**: Deletes checkpoint when backfill finishes successfully
+
+### Built-in Adapters
+
+**Checkpoint.Memory** - In-memory storage (good for testing):
+```elixir
+checkpoint Checkpoint.new(Checkpoint.Memory, "my_migration")
+```
+
+**Checkpoint.ETS** - ETS-based storage (faster, concurrent):
+```elixir
+checkpoint Checkpoint.new(Checkpoint.ETS, "my_migration")
+```
+
+### Custom Adapters
+
+Create your own adapter for persistent storage:
+
+```elixir
+defmodule MyApp.DBCheckpoint do
+  @behaviour Checkpoint
+  
+  def save(name, state) do
+    # Save to database
+    :ok
+  end
+  
+  def load(name) do
+    # Load from database
+    {:ok, state} # or {:error, :not_found}
+  end
+  
+  def delete(name) do
+    # Delete from database
+    :ok
+  end
+end
+
+# Use it
+batch_operation :migrate, initial_state: 0 do
+  checkpoint Checkpoint.new(MyApp.DBCheckpoint, "migration_v2")
+  # ...
+end
+```
+
+### Runtime Override
+
+```elixir
+# Disable checkpointing
+MyBackfills.migrate_users(checkpoint: nil)
+
+# Use different checkpoint
+MyBackfills.migrate_users(
+  checkpoint: Checkpoint.new(Checkpoint.ETS, "custom_name")
+)
+```
