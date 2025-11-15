@@ -242,6 +242,19 @@ GitHub Actions will:
 
 **Note**: The workflow will fail if the tag version doesn't match the version in `mix.exs`.
 
+## Examples
+
+Check out the [examples/](examples/) directory for comprehensive examples including:
+
+- **Basic single operations** - One-off tasks with health monitoring
+- **Pagination with single operations** - Manual pagination control
+- **Cycling/polling** - Queue processing and continuous tasks
+- **Basic batch operations** - Offset, cursor, and time-based pagination
+- **Advanced batch processing** - Checkpointing, retry logic, dynamic batch sizing
+- **Real-world PostgreSQL examples** - Database migrations and maintenance
+
+See [examples/README.md](examples/README.md) for detailed documentation.
+
 ## Documentation
 
 Documentation is available at [https://hexdocs.pm/adaptive_backfill](https://hexdocs.pm/adaptive_backfill).

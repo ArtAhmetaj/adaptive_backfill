@@ -45,7 +45,7 @@ defmodule AdaptiveBackfill.MixProject do
   defp package do
     [
       name: "adaptive_backfill",
-      files: ~w(lib .formatter.exs mix.exs README.md LICENSE CHANGELOG.md),
+      files: ~w(lib examples .formatter.exs mix.exs README.md LICENSE CHANGELOG.md),
       licenses: ["MIT"],
       links: %{
         "GitHub" => "https://github.com/YOUR_USERNAME/adaptive_backfill",
