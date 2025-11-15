@@ -259,6 +259,54 @@ See [examples/README.md](examples/README.md) for detailed documentation.
 
 Documentation is available at [https://hexdocs.pm/adaptive_backfill](https://hexdocs.pm/adaptive_backfill).
 
+## TODO / Future Improvements
+
+### Enhanced Health Check Evaluation
+
+The current health monitoring system uses a simple "fail-fast" approach: if **any** health check returns `{:halt, reason}`, the operation halts immediately. While this works for basic use cases, production systems often need more sophisticated evaluation strategies.
+
+**Current Behavior:**
+```elixir
+# If ANY health check fails, the entire operation halts
+health_checks [
+  &check_database/0,      # Returns {:halt, :high_load}
+  &check_memory/0,        # Never evaluated
+  &check_disk_space/0     # Never evaluated
+]
+```
+
+**Planned Improvements:**
+
+1. **Weighted Health Checks** - Assign importance levels to different monitors
+   ```elixir
+   health_checks [
+     {&check_database/0, weight: :critical},      # Must pass
+     {&check_memory/0, weight: :warning},         # Can fail
+     {&check_disk_space/0, weight: :info}         # Informational only
+   ]
+   ```
+
+2. **Threshold-Based Evaluation** - Halt only when a certain number/percentage of checks fail
+   ```elixir
+   health_check_strategy: {:threshold, 0.5}  # Halt if >50% fail
+   ```
+
+3. **Custom Evaluation Functions** - Let users define their own logic
+   ```elixir
+   health_check_evaluator: fn results ->
+     critical_failed = count_failed(results, :critical)
+     if critical_failed > 0, do: {:halt, :critical_failure}, else: :ok
+   end
+   ```
+
+4. **Graceful Degradation** - Continue with reduced functionality instead of halting
+   ```elixir
+   on_health_warning: fn warnings ->
+     # Reduce batch size, increase delays, etc.
+     {:continue, adjusted_options}
+   end
+   ```
+   
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
