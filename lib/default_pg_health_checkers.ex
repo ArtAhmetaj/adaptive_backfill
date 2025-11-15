@@ -44,8 +44,11 @@ defmodule AdaptiveBackfill.DefaultPgHealthCheckers do
   @type health_result() :: :ok | {:halt, String.t()}
 
   def pg_health_checks(repo) do
-    [&long_waiting_queries/1, &hot_io_tables/1, &temp_file_usage/1]
-    |> Enum.map(fn f -> f.(repo) end)
+    [
+      fn -> long_waiting_queries(repo) end,
+      fn -> hot_io_tables(repo) end,
+      fn -> temp_file_usage(repo) end
+    ]
   end
 
   defp run_query(repo, sql) do
