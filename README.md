@@ -1,6 +1,6 @@
 # AdaptiveBackfill
 
-[![Tests](https://github.com/ArtAhmetaj/adaptive_backfill/workflows/Tests/badge.svg)](https://github.com/ArtAhmetaj/adaptive_backfill/actions/workflows/test.yml)
+[![Tests](https://github.com/ArtAhmetaj/adaptive_backfill/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/ArtAhmetaj/adaptive_backfill/actions/workflows/test.yml)
 [![Hex.pm](https://img.shields.io/hexpm/v/adaptive_backfill.svg)](https://hex.pm/packages/adaptive_backfill)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-blue.svg)](https://hexdocs.pm/adaptive_backfill)
 
