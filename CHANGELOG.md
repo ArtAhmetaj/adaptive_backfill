@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2025-11-15
+
+### Fixed
+- Fixed `DefaultPgHealthCheckers.pg_health_checks/1` to return zero-argument functions compatible with health checker framework (changed from arity 1 to returning closures with arity 0)
+
 ## [0.1.0] - 2025-11-15
 
 ### Added
@@ -28,5 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `MonitorResultEvaluator` - Evaluate health check results and determine halt conditions
 - Mimic-based mocking for testability
 
-[Unreleased]: https://github.com/ArtAhmetaj/adaptive_backfill/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/ArtAhmetaj/adaptive_backfill/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/ArtAhmetaj/adaptive_backfill/compare/v0.1.0...v0.2.1
 [0.1.0]: https://github.com/ArtAhmetaj/adaptive_backfill/releases/tag/v0.1.0
