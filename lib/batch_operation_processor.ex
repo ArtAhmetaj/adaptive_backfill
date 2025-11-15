@@ -28,7 +28,7 @@ defmodule BatchOperationProcessor do
           run_batch_cycle(next_state, handle_batch, on_complete, mode, health_checkers)
         end
 
-      {:error, reason} = err ->
+      {:error, _reason} = err ->
         err
     end
   end

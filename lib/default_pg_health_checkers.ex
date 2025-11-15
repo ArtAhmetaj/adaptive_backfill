@@ -43,6 +43,12 @@ defmodule DefaultPgHealthCheckers do
   @type repo() :: module()
   @type health_result() :: :ok | {:halt, String.t()} #todo: duplicated.
 
+
+  def pg_health_checks(repo) do
+    [&long_waiting_queries/1,&hot_io_tables/1,&temp_file_usage/1]
+    |> Enum.map(fn f -> f.(repo) end)
+  end
+
   defp run_query(repo, sql) do
     repo.query!(sql)
   end
