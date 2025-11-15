@@ -29,50 +29,91 @@ end
 
 ## Usage
 
-### Single Operation Example
+### DSL API (Recommended)
+
+Define backfills using the clean DSL syntax:
 
 ```elixir
-# Define your operation with a health check callback
-handle = fn health_check ->
-  # Do some work
-  process_record()
+defmodule MyApp.Backfills do
+  use AdaptiveBackfill
+
+  # Single operation backfill
+  single_operation :process_user do
+    mode :sync
+    health_checks [&check_database/0, &check_memory/0]
+    
+    handle fn health_check ->
+      # Do some work
+      user = get_next_user()
+      process_user(user)
+      
+      # Check health before continuing
+      case health_check.() do
+        :ok -> :done
+        {:halt, reason} -> {:halt, reason}
+      end
+    end
+    
+    on_complete fn result ->
+      Logger.info("User processing completed: #{inspect(result)}")
+    end
+  end
+
+  # Batch operation backfill
+  batch_operation :migrate_users, initial_state: 0 do
+    mode :async
+    health_checks [&DefaultPgHealthCheckers.long_waiting_queries/1]
+    
+    handle_batch fn offset ->
+      users = get_users_batch(offset, 100)
+      
+      if Enum.empty?(users) do
+        :done
+      else
+        migrate_batch(users)
+        {:ok, offset + 100}
+      end
+    end
+    
+    on_complete fn result ->
+      Logger.info("Migration completed: #{inspect(result)}")
+    end
+  end
   
-  # Check health before continuing
+  defp check_database, do: :ok
+  defp check_memory, do: :ok
+end
+
+# Run your backfills
+MyApp.Backfills.process_user()
+MyApp.Backfills.migrate_users()
+
+# Override options at runtime
+MyApp.Backfills.migrate_users(initial_state: 500, mode: :sync)
+```
+
+### Legacy API
+
+You can still use the struct-based API for backwards compatibility:
+
+```elixir
+# Single operation
+handle = fn health_check ->
   case health_check.() do
     :ok -> :done
     {:halt, reason} -> {:halt, reason}
   end
 end
 
-# Define health checkers
-health_checkers = [
-  fn -> check_database_health() end,
-  fn -> check_memory_usage() end
-]
-
-# Create options and run
-{:ok, opts} = SingleOperationOptions.new(handle, nil, :sync, health_checkers)
+{:ok, opts} = SingleOperationOptions.new(handle, nil, :sync, [&check/0])
 AdaptiveBackfill.run(opts)
-```
 
-### Batch Operation Example
-
-```elixir
-# Define your batch handler
-handle_batch = fn
-  state when state < 100 ->
-    # Process batch
-    process_batch(state)
-    {:ok, state + 1}
-  _ ->
-    :done
+# Batch operation
+handle_batch = fn state ->
+  if state < 100, do: {:ok, state + 1}, else: :done
 end
 
-# Health checks run automatically between batches
-health_checkers = [DefaultPgHealthCheckers.long_waiting_queries(MyApp.Repo)]
-
-# Create options and run
-{:ok, opts} = BatchOperationOptions.new(0, handle_batch, nil, :async, health_checkers)
+{:ok, opts} = BatchOperationOptions.new(0, handle_batch, nil, :async, [&check/0])
 AdaptiveBackfill.run(opts)
 ```
 
