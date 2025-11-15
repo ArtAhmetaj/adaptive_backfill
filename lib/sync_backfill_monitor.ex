@@ -1,4 +1,4 @@
-defmodule SyncBackfillMonitor do
+defmodule AdaptiveBackfill.SyncBackfillMonitor do
   @moduledoc """
   Monitors synchronous backfill operations. Checks them in the background and not on demand.
   """

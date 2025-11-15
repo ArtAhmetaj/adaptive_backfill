@@ -1,6 +1,8 @@
 defmodule CheckpointTest do
   use ExUnit.Case, async: false
 
+  alias AdaptiveBackfill.Checkpoint
+
   describe "Checkpoint.Memory" do
     setup do
       # Ensure the agent is started, ignore if already started

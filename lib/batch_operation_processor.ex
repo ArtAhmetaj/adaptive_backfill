@@ -1,9 +1,9 @@
-defmodule BatchOperationProcessor do
+defmodule AdaptiveBackfill.BatchOperationProcessor do
   @moduledoc """
   Processes batches of operations with health checks. The library handles the health checks by batches and the user does not control the process.
   """
-  alias BatchOperationOptions
-  alias MonitorResultEvaluator
+  alias AdaptiveBackfill.BatchOperationOptions
+  alias AdaptiveBackfill.MonitorResultEvaluator
 
   def process(%BatchOperationOptions{} = options) do
     %{
@@ -52,7 +52,7 @@ defmodule BatchOperationProcessor do
 
     # Clear checkpoint on successful completion
     case result do
-      {:ok, :done} -> Checkpoint.delete(checkpoint)
+      {:ok, :done} -> AdaptiveBackfill.Checkpoint.delete(checkpoint)
       # Keep checkpoint for manual resume
       {:halt, _} -> :ok
       # Keep checkpoint for retry
@@ -69,7 +69,7 @@ defmodule BatchOperationProcessor do
   defp load_checkpoint(nil, initial_state), do: initial_state
 
   defp load_checkpoint(checkpoint, initial_state) do
-    case Checkpoint.load(checkpoint) do
+    case AdaptiveBackfill.Checkpoint.load(checkpoint) do
       {:ok, state} -> state
       {:error, :not_found} -> initial_state
       {:error, _} -> initial_state
@@ -138,7 +138,7 @@ defmodule BatchOperationProcessor do
           if on_success, do: on_success.(next_state)
 
           # Save checkpoint after successful batch
-          Checkpoint.save(checkpoint, next_state)
+          AdaptiveBackfill.Checkpoint.save(checkpoint, next_state)
 
           if delay, do: Process.sleep(delay)
 
@@ -180,7 +180,7 @@ defmodule BatchOperationProcessor do
           )
 
           # Save checkpoint on error so we can resume
-          Checkpoint.save(checkpoint, state)
+          AdaptiveBackfill.Checkpoint.save(checkpoint, state)
           if on_error, do: on_error.(reason, state)
           err
       end
@@ -196,7 +196,7 @@ defmodule BatchOperationProcessor do
         )
 
         # Save checkpoint on exception
-        Checkpoint.save(checkpoint, state)
+        AdaptiveBackfill.Checkpoint.save(checkpoint, state)
         if on_error, do: on_error.(error, state)
         {:error, error}
     catch
@@ -211,14 +211,14 @@ defmodule BatchOperationProcessor do
         )
 
         # Save checkpoint on exit
-        Checkpoint.save(checkpoint, state)
+        AdaptiveBackfill.Checkpoint.save(checkpoint, state)
         if on_error, do: on_error.({:exit, reason}, state)
         {:error, {:exit, reason}}
     end
   end
 
   defp init_health_checks(:async, health_checkers) do
-    {:ok, pid} = AsyncMonitor.start_link(health_checkers)
+    {:ok, pid} = AdaptiveBackfill.AsyncMonitor.start_link(health_checkers)
     pid
   end
 
@@ -231,7 +231,7 @@ defmodule BatchOperationProcessor do
   end
 
   defp run_health_checks(:sync, health_checkers) do
-    SyncMonitor.get_state(health_checkers)
+    AdaptiveBackfill.SyncMonitor.get_state(health_checkers)
   end
 
   defp cleanup_health_checks(:async, pid) do

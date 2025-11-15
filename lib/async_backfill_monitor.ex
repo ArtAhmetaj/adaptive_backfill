@@ -1,4 +1,4 @@
-defmodule AsyncBackfillMonitor do
+defmodule AdaptiveBackfill.AsyncBackfillMonitor do
   @moduledoc """
   Monitors async backfill operations. Provides state of provided health checks, to see if system is still valid.
   """

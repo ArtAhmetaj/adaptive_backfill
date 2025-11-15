@@ -1,9 +1,9 @@
-defmodule SingleOperationProcessor do
+defmodule AdaptiveBackfill.SingleOperationProcessor do
   @moduledoc """
   Processes single operations with health checks. The user controls the operations and has a health_check callback to handle the check imperatively.
   """
-  alias MonitorResultEvaluator
-  alias SingleOperationOptions
+  alias AdaptiveBackfill.MonitorResultEvaluator
+  alias AdaptiveBackfill.SingleOperationOptions
 
   def process(%SingleOperationOptions{} = options) do
     %{
@@ -89,10 +89,10 @@ defmodule SingleOperationProcessor do
   end
 
   defp build_health_check_callback(:async, health_checkers) do
-    {:ok, pid} = AsyncMonitor.start_link(health_checkers)
+    {:ok, pid} = AdaptiveBackfill.AsyncMonitor.start_link(health_checkers)
 
     fn ->
-      monitor_results = AsyncMonitor.get_state(pid)
+      monitor_results = AdaptiveBackfill.AsyncMonitor.get_state(pid)
 
       if MonitorResultEvaluator.halt?(monitor_results) do
         {:halt, monitor_results}
@@ -104,7 +104,7 @@ defmodule SingleOperationProcessor do
 
   defp build_health_check_callback(:sync, health_checkers) do
     fn ->
-      monitor_results = SyncMonitor.get_state(health_checkers)
+      monitor_results = AdaptiveBackfill.SyncMonitor.get_state(health_checkers)
 
       if MonitorResultEvaluator.halt?(monitor_results) do
         {:halt, monitor_results}

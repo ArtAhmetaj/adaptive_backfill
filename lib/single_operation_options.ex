@@ -1,9 +1,9 @@
-defmodule SingleOperationOptions do
+defmodule AdaptiveBackfill.SingleOperationOptions do
   @moduledoc """
   Struct that holds single operation options, this is for the user to control and not batch.
   """
 
-  alias Types
+  alias AdaptiveBackfill.Types
 
   @type health_check :: (-> :ok | {:halt, any()})
 

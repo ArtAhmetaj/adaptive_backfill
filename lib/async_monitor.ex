@@ -1,11 +1,8 @@
-defmodule AsyncMonitor do
+defmodule AdaptiveBackfill.AsyncMonitor do
   @moduledoc """
   Async monitor that does the healthcheck in the background and provides the state, nonblocking.
   """
   use GenServer
-
-  alias Types
-  alias Utils
 
   @timeout_in_ms 15_000
   @poll_time_in_ms 10_000

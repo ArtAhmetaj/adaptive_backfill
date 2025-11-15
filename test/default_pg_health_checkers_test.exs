@@ -1,6 +1,8 @@
 defmodule DefaultPgHealthCheckersTest do
   use ExUnit.Case
 
+  alias AdaptiveBackfill.DefaultPgHealthCheckers
+
   setup do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(AdaptiveBackfill.Repo)
     Ecto.Adapters.SQL.Sandbox.mode(AdaptiveBackfill.Repo, {:shared, self()})

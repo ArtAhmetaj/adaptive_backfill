@@ -1,6 +1,9 @@
 defmodule BatchOperationProcessorTest do
   use ExUnit.Case
 
+  alias AdaptiveBackfill.BatchOperationOptions
+  alias AdaptiveBackfill.BatchOperationProcessor
+
   describe "process/1 with sync mode" do
     test "processes batches until done is returned" do
       handle_batch = fn

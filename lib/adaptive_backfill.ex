@@ -108,8 +108,14 @@ defmodule AdaptiveBackfill do
           telemetry_prefix: telemetry_prefix
         ]
 
-        case SingleOperationOptions.new(handle, on_complete, mode, health_checks, single_opts) do
-          {:ok, options} -> SingleOperationProcessor.process(options)
+        case AdaptiveBackfill.SingleOperationOptions.new(
+               handle,
+               on_complete,
+               mode,
+               health_checks,
+               single_opts
+             ) do
+          {:ok, options} -> AdaptiveBackfill.SingleOperationProcessor.process(options)
           {:error, reason} -> {:error, reason}
         end
       end
@@ -180,7 +186,7 @@ defmodule AdaptiveBackfill do
           telemetry_prefix: telemetry_prefix
         ]
 
-        case BatchOperationOptions.new(
+        case AdaptiveBackfill.BatchOperationOptions.new(
                initial_state,
                handle_batch,
                on_complete,
@@ -188,7 +194,7 @@ defmodule AdaptiveBackfill do
                health_checks,
                batch_opts
              ) do
-          {:ok, options} -> BatchOperationProcessor.process(options)
+          {:ok, options} -> AdaptiveBackfill.BatchOperationProcessor.process(options)
           {:error, reason} -> {:error, reason}
         end
       end
@@ -313,11 +319,17 @@ defmodule AdaptiveBackfill do
   @doc """
   Run a backfill with options struct (non-DSL API).
   """
-  @spec run(SingleOperationOptions.t() | BatchOperationOptions.t()) :: :ok | :halt | :done
+  @spec run(
+          AdaptiveBackfill.SingleOperationOptions.t()
+          | AdaptiveBackfill.BatchOperationOptions.t()
+        ) :: :ok | :halt | :done
   def run(opts) do
     case opts do
-      %SingleOperationOptions{} -> SingleOperationProcessor.process(opts)
-      %BatchOperationOptions{} -> BatchOperationProcessor.process(opts)
+      %AdaptiveBackfill.SingleOperationOptions{} ->
+        AdaptiveBackfill.SingleOperationProcessor.process(opts)
+
+      %AdaptiveBackfill.BatchOperationOptions{} ->
+        AdaptiveBackfill.BatchOperationProcessor.process(opts)
     end
   end
 end

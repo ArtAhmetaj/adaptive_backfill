@@ -1,4 +1,4 @@
-defmodule SyncMonitor do
+defmodule AdaptiveBackfill.SyncMonitor do
   @moduledoc """
   Synchronous health monitor. Checks health_checks without these running in the background
   """

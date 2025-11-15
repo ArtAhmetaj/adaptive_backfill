@@ -1,6 +1,9 @@
 defmodule SingleOperationProcessorTest do
   use ExUnit.Case
 
+  alias AdaptiveBackfill.SingleOperationOptions
+  alias AdaptiveBackfill.SingleOperationProcessor
+
   describe "process/1 with sync mode" do
     test "processes operation that returns :done" do
       handle = fn _health_check -> :done end

@@ -1,4 +1,4 @@
-defmodule MonitorResultEvaluator do
+defmodule AdaptiveBackfill.MonitorResultEvaluator do
   @moduledoc """
   Evaluates based on rules whether we should stop or not.
   Currently simplistic.

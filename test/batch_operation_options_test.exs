@@ -1,6 +1,8 @@
 defmodule BatchOperationOptionsTest do
   use ExUnit.Case
 
+  alias AdaptiveBackfill.BatchOperationOptions
+
   describe "new/5" do
     test "creates valid batch operation options with all required fields" do
       handle_batch = fn state -> {:ok, state + 1} end

@@ -1,4 +1,4 @@
-defmodule Checkpoint do
+defmodule AdaptiveBackfill.Checkpoint do
   @moduledoc """
   Checkpoint configuration for backfill operations.
 
@@ -69,7 +69,7 @@ defmodule Checkpoint do
     @moduledoc """
     In-memory checkpoint adapter for testing.
     """
-    @behaviour Checkpoint
+    @behaviour AdaptiveBackfill.Checkpoint
     use Agent
 
     def start_link(_opts \\ []) do
@@ -117,7 +117,7 @@ defmodule Checkpoint do
     @moduledoc """
     ETS-based checkpoint adapter.
     """
-    @behaviour Checkpoint
+    @behaviour AdaptiveBackfill.Checkpoint
     @table_name :adaptive_backfill_checkpoints
 
     def start_link(_opts \\ []) do
