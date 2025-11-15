@@ -1,9 +1,14 @@
 defmodule CheckpointTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
   describe "Checkpoint.Memory" do
     setup do
-      Checkpoint.Memory.start_link()
+      # Ensure the agent is started, ignore if already started
+      case Checkpoint.Memory.start_link() do
+        {:ok, _pid} -> :ok
+        {:error, {:already_started, _pid}} -> :ok
+      end
+      
       Checkpoint.Memory.clear()
       :ok
     end

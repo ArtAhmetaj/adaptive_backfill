@@ -14,14 +14,14 @@ defmodule AsyncMonitor do
   Starts the GenServer.
   """
   def start_link(init_args) do
-    GenServer.start_link(__MODULE__, init_args, name: __MODULE__)
+    GenServer.start_link(__MODULE__, init_args)
   end
 
   @doc """
-  Gets the current state synchronously.
+  Gets the current state synchronously from a specific monitor PID.
   """
-  def get_state do
-    GenServer.call(__MODULE__, :get_state)
+  def get_state(pid) do
+    GenServer.call(pid, :get_state)
   end
 
   @impl true

@@ -150,7 +150,7 @@ defmodule MonitorModulesTest do
       # Give it time to run checks
       Process.sleep(100)
 
-      result = GenServer.call(pid, :get_state)
+      result = AsyncMonitor.get_state(pid)
       assert result == [:ok]
 
       GenServer.stop(pid)
@@ -183,7 +183,7 @@ defmodule MonitorModulesTest do
       {:ok, pid} = AsyncMonitor.start_link(health_checkers)
       Process.sleep(100)
 
-      result = GenServer.call(pid, :get_state)
+      result = AsyncMonitor.get_state(pid)
       assert length(result) == 2
       assert :ok in result
       assert {:halt, :warning} in result
