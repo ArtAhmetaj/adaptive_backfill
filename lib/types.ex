@@ -1,4 +1,4 @@
-defmodule Types do
+defmodule AdaptiveBackfill.Types do
   @moduledoc """
   Common type definitions.
   """

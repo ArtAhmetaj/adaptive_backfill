@@ -1,9 +1,9 @@
-defmodule BatchOperationOptions do
+defmodule AdaptiveBackfill.BatchOperationOptions do
   @moduledoc """
   Struct that holds config for batch operations, used for pagination or chunked behaviour.
   """
 
-  alias Types
+  alias AdaptiveBackfill.Types
 
   @type t :: %__MODULE__{
           initial_state: any(),

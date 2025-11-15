@@ -1,6 +1,8 @@
 defmodule MonitorResultEvaluatorTest do
   use ExUnit.Case
 
+  alias AdaptiveBackfill.MonitorResultEvaluator
+
   describe "halt?/1" do
     test "returns true when any result is {:halt, reason}" do
       monitor_results = [:ok, :ok, {:halt, :timeout}, :ok]

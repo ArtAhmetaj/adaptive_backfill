@@ -2,6 +2,9 @@ defmodule AdaptiveBackfillTest do
   use ExUnit.Case
   doctest AdaptiveBackfill
 
+  alias AdaptiveBackfill.SingleOperationOptions
+  alias AdaptiveBackfill.BatchOperationOptions
+
   # ============================================================================
   # Basic DSL API Tests
   # ============================================================================

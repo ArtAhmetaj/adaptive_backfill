@@ -1,4 +1,4 @@
-defmodule DefaultPgHealthCheckers do
+defmodule AdaptiveBackfill.DefaultPgHealthCheckers do
   @moduledoc """
   Provides default PostgreSQL health check queries that return
   :ok if everything is fine, or {:halt, reason} if issues are found.

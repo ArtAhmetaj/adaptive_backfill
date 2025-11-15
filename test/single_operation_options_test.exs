@@ -1,6 +1,8 @@
 defmodule SingleOperationOptionsTest do
   use ExUnit.Case
 
+  alias AdaptiveBackfill.SingleOperationOptions
+
   describe "new/4" do
     test "creates valid single operation options with all required fields" do
       handle = fn _health_check -> {:ok, :result} end
