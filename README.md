@@ -163,43 +163,6 @@ mix format
 mix credo
 ```
 
-## Publishing a New Version
-
-1. **Update version in `mix.exs`**:
-   ```elixir
-   version: "0.2.0"  # Update this
-   ```
-
-2. **Update `CHANGELOG.md`** with changes:
-   ```markdown
-   ## [0.2.0] - 2025-11-15
-   ### Added
-   - New feature
-   ```
-
-3. **Commit and push changes**:
-   ```bash
-   git add mix.exs CHANGELOG.md
-   git commit -m "Release v0.2.0"
-   git push origin main
-   ```
-
-4. **Create and push a tag**:
-   ```bash
-   git tag v0.2.0
-   git push origin v0.2.0
-   ```
-
-### What Happens Automatically
-
-GitHub Actions will:
-- Validate tag matches mix.exs version
-- Run all tests and checks
-- Create GitHub Release with changelog
-- Publish to Hex.pm
-
-**Note**: The workflow will fail if the tag version doesn't match the version in `mix.exs`.
-
 ## Examples
 
 Check out the [examples/](examples/) directory including:
