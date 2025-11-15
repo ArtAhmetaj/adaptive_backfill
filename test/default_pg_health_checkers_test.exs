@@ -21,7 +21,7 @@ defmodule DefaultPgHealthCheckersTest do
       result = DefaultPgHealthCheckers.pg_health_checks(repo)
 
       Enum.each(result, fn check_result ->
-        assert check_result == :ok or match?({:halt, _}, check_result)
+        assert check_result.() == :ok or match?({:halt, _}, check_result)
       end)
     end
   end
