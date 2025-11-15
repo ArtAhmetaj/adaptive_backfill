@@ -1,18 +1,14 @@
 defmodule AdaptiveBackfill do
   @moduledoc """
-  Documentation for `AdaptiveBackfill`.
+  Entry point for creating an adaptive backfill.
+  Can create a single operation backfill or a batch one.
   """
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> AdaptiveBackfill.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  @spec run(%SingleOperationOptions{} | %BatchOperationOptions{}) :: :ok | :halt | :done
+  def run(opts) do
+    case opts do
+      %SingleOperationOptions{} -> SingleOperationProcessor.process(opts)
+      %BatchOperationOptions{} -> BatchOperationProcessor.process(opts)
+    end
   end
 end
