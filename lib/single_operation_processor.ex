@@ -2,8 +2,8 @@ defmodule SingleOperationProcessor do
   @moduledoc """
   Processes single operations with health checks. The user controls the operations and has a health_check callback to handle the check imperatively.
   """
-  alias SingleOperationOptions
   alias MonitorResultEvaluator
+  alias SingleOperationOptions
 
   def process(%SingleOperationOptions{} = options) do
     %{
@@ -92,7 +92,7 @@ defmodule SingleOperationProcessor do
     {:ok, pid} = AsyncMonitor.start_link(health_checkers)
 
     fn ->
-      monitor_results = GenServer.call(pid, :get_state)
+      monitor_results = AsyncMonitor.get_state(pid)
 
       if MonitorResultEvaluator.halt?(monitor_results) do
         {:halt, monitor_results}
