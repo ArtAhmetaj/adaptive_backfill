@@ -59,13 +59,28 @@ defmodule AdaptiveBackfill do
     * `:health_checks` - List of health check functions
     * `:handle` - The operation handler function
     * `:on_complete` - Optional completion callback
+    * `:on_success` - Optional success callback
+    * `:on_error` - Optional error callback
+    * `:timeout` - Optional timeout in milliseconds
+    * `:telemetry_prefix` - Optional telemetry event prefix (list of atoms)
 
   ## Example
 
       single_operation :my_operation do
         mode :sync
         health_checks [&check_health/0]
+        timeout 30_000
+        telemetry_prefix [:my_app, :operation]
+        
         handle fn health_check -> :done end
+        
+        on_success fn result ->
+          Logger.info("Operation succeeded")
+        end
+        
+        on_error fn error ->
+          Logger.error("Operation failed")
+        end
       end
   """
   defmacro single_operation(name, do: block) do
@@ -77,10 +92,21 @@ defmodule AdaptiveBackfill do
       def unquote(name)(opts \\ []) do
         handle = Keyword.get(opts, :handle, unquote(config[:handle]))
         on_complete = Keyword.get(opts, :on_complete, unquote(config[:on_complete]))
+        on_success = Keyword.get(opts, :on_success, unquote(config[:on_success]))
+        on_error = Keyword.get(opts, :on_error, unquote(config[:on_error]))
         mode = Keyword.get(opts, :mode, unquote(config[:mode] || :sync))
         health_checks = Keyword.get(opts, :health_checks, unquote(config[:health_checks]))
+        timeout = Keyword.get(opts, :timeout, unquote(config[:timeout]))
+        telemetry_prefix = Keyword.get(opts, :telemetry_prefix, unquote(config[:telemetry_prefix]))
         
-        case SingleOperationOptions.new(handle, on_complete, mode, health_checks) do
+        single_opts = [
+          on_success: on_success,
+          on_error: on_error,
+          timeout: timeout,
+          telemetry_prefix: telemetry_prefix
+        ]
+        
+        case SingleOperationOptions.new(handle, on_complete, mode, health_checks, single_opts) do
           {:ok, options} -> SingleOperationProcessor.process(options)
           {:error, reason} -> {:error, reason}
         end
