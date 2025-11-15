@@ -98,6 +98,12 @@ defmodule AdaptiveBackfill do
     * `:health_checks` - List of health check functions
     * `:handle_batch` - The batch handler function
     * `:on_complete` - Optional completion callback
+    * `:on_success` - Optional success callback (called after each successful batch)
+    * `:on_error` - Optional error callback (receives error and state)
+    * `:delay_between_batches` - Milliseconds to wait between batches
+    * `:timeout` - Milliseconds before timing out a batch
+    * `:batch_size` - Number of items per batch (informational)
+    * `:telemetry_prefix` - List of atoms for telemetry event prefix
 
   ## Example
 
@@ -105,6 +111,11 @@ defmodule AdaptiveBackfill do
         mode :async
         health_checks [&check_health/0]
         handle_batch fn state -> {:ok, state + 1} end
+        delay_between_batches 1000
+        timeout 30_000
+        on_success fn state -> Logger.info("Batch succeeded") end
+        on_error fn error, state -> Logger.error("Batch failed") end
+        telemetry_prefix [:my_app, :backfill]
       end
   """
   defmacro batch_operation(name, opts \\ [], do: block) do
@@ -117,11 +128,26 @@ defmodule AdaptiveBackfill do
       def unquote(name)(opts \\ []) do
         handle_batch = Keyword.get(opts, :handle_batch, unquote(config[:handle_batch]))
         on_complete = Keyword.get(opts, :on_complete, unquote(config[:on_complete]))
+        on_success = Keyword.get(opts, :on_success, unquote(config[:on_success]))
+        on_error = Keyword.get(opts, :on_error, unquote(config[:on_error]))
         mode = Keyword.get(opts, :mode, unquote(config[:mode] || :sync))
         health_checks = Keyword.get(opts, :health_checks, unquote(config[:health_checks]))
         initial_state = Keyword.get(opts, :initial_state, unquote(initial_state))
+        delay_between_batches = Keyword.get(opts, :delay_between_batches, unquote(config[:delay_between_batches]))
+        timeout = Keyword.get(opts, :timeout, unquote(config[:timeout]))
+        batch_size = Keyword.get(opts, :batch_size, unquote(config[:batch_size]))
+        telemetry_prefix = Keyword.get(opts, :telemetry_prefix, unquote(config[:telemetry_prefix]))
         
-        case BatchOperationOptions.new(initial_state, handle_batch, on_complete, mode, health_checks) do
+        batch_opts = [
+          on_success: on_success,
+          on_error: on_error,
+          delay_between_batches: delay_between_batches,
+          timeout: timeout,
+          batch_size: batch_size,
+          telemetry_prefix: telemetry_prefix
+        ]
+        
+        case BatchOperationOptions.new(initial_state, handle_batch, on_complete, mode, health_checks, batch_opts) do
           {:ok, options} -> BatchOperationProcessor.process(options)
           {:error, reason} -> {:error, reason}
         end
@@ -138,6 +164,12 @@ defmodule AdaptiveBackfill do
         {:handle, _, [value]} -> Map.put(acc, :handle, value)
         {:handle_batch, _, [value]} -> Map.put(acc, :handle_batch, value)
         {:on_complete, _, [value]} -> Map.put(acc, :on_complete, value)
+        {:on_success, _, [value]} -> Map.put(acc, :on_success, value)
+        {:on_error, _, [value]} -> Map.put(acc, :on_error, value)
+        {:delay_between_batches, _, [value]} -> Map.put(acc, :delay_between_batches, value)
+        {:timeout, _, [value]} -> Map.put(acc, :timeout, value)
+        {:batch_size, _, [value]} -> Map.put(acc, :batch_size, value)
+        {:telemetry_prefix, _, [value]} -> Map.put(acc, :telemetry_prefix, value)
         _ -> acc
       end
     end)
@@ -150,6 +182,12 @@ defmodule AdaptiveBackfill do
       {:handle, _, [value]} -> %{handle: value}
       {:handle_batch, _, [value]} -> %{handle_batch: value}
       {:on_complete, _, [value]} -> %{on_complete: value}
+      {:on_success, _, [value]} -> %{on_success: value}
+      {:on_error, _, [value]} -> %{on_error: value}
+      {:delay_between_batches, _, [value]} -> %{delay_between_batches: value}
+      {:timeout, _, [value]} -> %{timeout: value}
+      {:batch_size, _, [value]} -> %{batch_size: value}
+      {:telemetry_prefix, _, [value]} -> %{telemetry_prefix: value}
       _ -> %{}
     end
   end
@@ -187,6 +225,48 @@ defmodule AdaptiveBackfill do
   """
   defmacro on_complete(func) do
     quote do: {:on_complete, unquote(func)}
+  end
+
+  @doc """
+  Sets the on_success callback (called after each successful batch).
+  """
+  defmacro on_success(func) do
+    quote do: {:on_success, unquote(func)}
+  end
+
+  @doc """
+  Sets the on_error callback (receives error and state).
+  """
+  defmacro on_error(func) do
+    quote do: {:on_error, unquote(func)}
+  end
+
+  @doc """
+  Sets the delay between batches in milliseconds.
+  """
+  defmacro delay_between_batches(ms) do
+    quote do: {:delay_between_batches, unquote(ms)}
+  end
+
+  @doc """
+  Sets the timeout for each batch in milliseconds.
+  """
+  defmacro timeout(ms) do
+    quote do: {:timeout, unquote(ms)}
+  end
+
+  @doc """
+  Sets the batch size (informational, for user's handle_batch logic).
+  """
+  defmacro batch_size(size) do
+    quote do: {:batch_size, unquote(size)}
+  end
+
+  @doc """
+  Sets the telemetry event prefix (list of atoms).
+  """
+  defmacro telemetry_prefix(prefix) do
+    quote do: {:telemetry_prefix, unquote(prefix)}
   end
 
   # Legacy API for backwards compatibility

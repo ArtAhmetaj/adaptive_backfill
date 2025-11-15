@@ -28,6 +28,7 @@ defmodule AdaptiveBackfill.MixProject do
       {:ecto, "~> 3.13.0"},
       {:ecto_sql, "~> 3.12.0"},
       {:postgrex, "~> 0.17"},
+      {:telemetry, "~> 1.0"},
       {:mimic, "~> 1.7", only: :test},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false}
