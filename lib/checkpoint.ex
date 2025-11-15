@@ -65,10 +65,10 @@ defmodule Checkpoint do
   """
   @callback delete(checkpoint_name()) :: :ok | {:error, error()}
 
-  @doc """
-  In-memory checkpoint adapter for testing.
-  """
   defmodule Memory do
+    @moduledoc """
+    In-memory checkpoint adapter for testing.
+    """
     @behaviour Checkpoint
     use Agent
 
@@ -113,10 +113,10 @@ defmodule Checkpoint do
     end
   end
 
-  @doc """
-  ETS-based checkpoint adapter.
-  """
   defmodule ETS do
+    @moduledoc """
+    ETS-based checkpoint adapter.
+    """
     @behaviour Checkpoint
     @table_name :adaptive_backfill_checkpoints
 

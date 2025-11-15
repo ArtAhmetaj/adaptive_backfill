@@ -309,11 +309,11 @@ defmodule AdaptiveBackfill do
     quote do: {:telemetry_prefix, unquote(prefix)}
   end
 
-  # Legacy API for backwards compatibility
+  # Non-DSL API
   @doc """
-  Run a backfill with options struct (legacy API).
+  Run a backfill with options struct (non-DSL API).
   """
-  @spec run(%SingleOperationOptions{} | %BatchOperationOptions{}) :: :ok | :halt | :done
+  @spec run(SingleOperationOptions.t() | BatchOperationOptions.t()) :: :ok | :halt | :done
   def run(opts) do
     case opts do
       %SingleOperationOptions{} -> SingleOperationProcessor.process(opts)
