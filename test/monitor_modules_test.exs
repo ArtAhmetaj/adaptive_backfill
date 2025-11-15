@@ -2,9 +2,9 @@ defmodule MonitorModulesTest do
   use ExUnit.Case
 
   alias AdaptiveBackfill.AsyncBackfillMonitor
+  alias AdaptiveBackfill.AsyncMonitor
   alias AdaptiveBackfill.SyncBackfillMonitor
   alias AdaptiveBackfill.SyncMonitor
-  alias AdaptiveBackfill.AsyncMonitor
 
   describe "AsyncBackfillMonitor" do
     test "starts with initial state" do
