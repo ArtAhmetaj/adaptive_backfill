@@ -15,7 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Batch operation processor with health checks
 - Synchronous and asynchronous health monitoring modes
 - PostgreSQL health checkers (long queries, hot I/O tables, temp file usage)
-- Comprehensive test suite with 137 tests
 - CI/CD pipeline with GitHub Actions
 - Code formatting and linting with Credo
 - Docker Compose setup for testing with PostgreSQL

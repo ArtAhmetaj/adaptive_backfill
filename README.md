@@ -13,7 +13,6 @@ Adaptive backfill library with health checks for Elixir. Supports both single op
 - **Sync/Async Modes**: Choose between synchronous or background health monitoring
 - **PostgreSQL Health Checks**: Built-in checks for long queries, hot I/O tables, and temp file usage
 - **Customizable**: Bring your own health checkers
-- **Well-tested**: 69 tests with comprehensive coverage
 
 ## Installation
 
@@ -244,14 +243,14 @@ GitHub Actions will:
 
 ## Examples
 
-Check out the [examples/](examples/) directory for comprehensive examples including:
+Check out the [examples/](examples/) directory including:
 
-- **Basic single operations** - One-off tasks with health monitoring
-- **Pagination with single operations** - Manual pagination control
+- **Single operations** - One-off tasks with health monitoring
+- **Pagination** - Manual pagination control
 - **Cycling/polling** - Queue processing and continuous tasks
-- **Basic batch operations** - Offset, cursor, and time-based pagination
-- **Advanced batch processing** - Checkpointing, retry logic, dynamic batch sizing
-- **Real-world PostgreSQL examples** - Database migrations and maintenance
+- **Batch operations** - Offset, cursor, and time-based pagination
+- **Checkpointing** - Retry logic and dynamic batch sizing
+- **PostgreSQL examples** - Database migrations and maintenance
 
 See [examples/README.md](examples/README.md) for detailed documentation.
 
@@ -263,7 +262,7 @@ Documentation is available at [https://hexdocs.pm/adaptive_backfill](https://hex
 
 ### Enhanced Health Check Evaluation
 
-The current health monitoring system uses a simple "fail-fast" approach: if **any** health check returns `{:halt, reason}`, the operation halts immediately. While this works for basic use cases, production systems often need more sophisticated evaluation strategies.
+The current health monitoring system uses a simple "fail-fast" approach: if **any** health check returns `{:halt, reason}`, the operation halts immediately. Production systems may need different evaluation strategies.
 
 **Current Behavior:**
 ```elixir
@@ -306,7 +305,7 @@ health_checks [
      {:continue, adjusted_options}
    end
    ```
-   
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
